@@ -1,0 +1,3 @@
+*If Powershell refuses to activate venv
+
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
