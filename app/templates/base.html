@@ -1,0 +1,80 @@
+{% from 'bootstrap4/nav.html' import render_nav_item %}
+
+<!doctype html>
+<html lang="en">
+    <head>
+        {% block head %}
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        {% block styles %}
+            <style>
+            html {
+                font-size: 15px
+            }
+            </style>
+            <!-- Bootstrap CSS -->
+            {{ bootstrap.load_css() }}
+            <link href="/static/fontawesome/css/fontawesome.css" rel="stylesheet">
+            <link href="/static/fontawesome/css/brands.css" rel="stylesheet">
+            <link href="/static/fontawesome/css/solid.css" rel="stylesheet">
+        {% endblock %}
+
+        <title>{{ config['APP_NAME'] }}</title>
+        {% endblock %}
+    </head>
+    <body>
+        <!-- Your page content -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container">
+              <a class="navbar-brand" href="{{url_for('main.index')}}">
+                  {{config['APP_BRAND_NAME'] or config['APP_NAME'] or 'Navbar'}}</a>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+
+              <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+                <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                  {{ render_nav_item('main.index', 'Home') }}
+                  {{ render_nav_item('main.index', 'Explore') }}
+                  {{ render_nav_item('main.index', 'About') }}
+                </ul>
+                {% if current_user.is_anonymous %}
+                  <a class="btn btn-outline-primary" href="{{url_for('auth.login')}}">Login</a>
+                {% else %}
+                   <div class="dropdown">
+                      <a class="nav-item nav-link active dropdown-toggle" data-toggle="dropdown" aria-current="page" href="/index">
+                        <span class="fa-solid fa-user">&nbsp;</span>{{ current_user.username }}
+                      </a>
+                      <div class="dropdown-menu">
+                        <a class="dropdown-item" href="{{url_for('auth.edit_profile')}}">Profile</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a>
+                      </div>
+                    </div>
+                {% endif %}
+              </div>
+            </div>
+        </nav>
+
+        <div class="container">
+
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <p/>
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            {# application content needs to be provided in the content block #}
+            {% block content %}{% endblock %}
+        </div>
+        {% block scripts %}
+            <!-- Optional JavaScript -->
+            {{ bootstrap.load_js() }}
+        {% endblock %}
+    </body>
+</html>
