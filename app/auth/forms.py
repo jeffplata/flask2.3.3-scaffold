@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
-from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Length
+from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from app.models import User
 
 
@@ -41,7 +41,7 @@ class ResetPasswordForm(FlaskForm):
     password2 = PasswordField(
         'Repeat Password', validators=[DataRequired(),
                                        EqualTo('password')])
-    submit = SubmitField('Request Password Reset')
+    submit = SubmitField('Reset Password')
 
 
 class EditProfileForm(FlaskForm):
@@ -60,3 +60,10 @@ class EditProfileForm(FlaskForm):
             user = User.query.filter_by(username=self.username.data).first()
             if user is not None:
                 raise ValidationError('Please use a different username.')
+
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('Current password', validators=[DataRequired()])
+    new_password = PasswordField('New password', validators=[DataRequired()])
+    new_password2 = PasswordField('Repeat new password', validators=[DataRequired(), EqualTo('new_password')])
+    submit = SubmitField('Change password')

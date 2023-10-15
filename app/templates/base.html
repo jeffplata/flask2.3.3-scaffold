@@ -44,9 +44,9 @@
                   <a class="btn btn-outline-primary" href="{{url_for('auth.login')}}">Login</a>
                 {% else %}
                    <div class="dropdown">
-                      <a class="nav-item nav-link active dropdown-toggle" data-toggle="dropdown" aria-current="page" href="/index">
+                      <button class="btn btn-outline-info dropdown-toggle" data-toggle="dropdown" aria-current="page">
                         <span class="fa-solid fa-user">&nbsp;</span>{{ current_user.username }}
-                      </a>
+                      </button>
                       <div class="dropdown-menu">
                         <a class="dropdown-item" href="{{url_for('auth.edit_profile')}}">Profile</a>
                         <div class="dropdown-divider"></div>
@@ -60,11 +60,11 @@
 
         <div class="container">
 
-            {% with messages = get_flashed_messages() %}
+            {% with messages = get_flashed_messages(with_categories=True) %}
             {% if messages %}
                 <p/>
-                {% for message in messages %}
-                <div class="alert alert-info" role="alert">{{ message }}</div>
+                {% for category, message in messages %}
+                    <div class="alert {{ category if category!='message' else 'alert-info' }}">{{ message }}</div>
                 {% endfor %}
             {% endif %}
             {% endwith %}

@@ -1,11 +1,15 @@
 {% extends "base.html" %}
-{% import 'bootstrap/form.html' as wtf %}
+{% import 'bootstrap4/form.html' as wtf %}
 
 {% block content %}
     <h1>Edit profile</h1>
     <div class="row">
         <div class="col-md-4">
             {{ wtf.render_form(form) }}
+            <p/><p/>
+            <a href="{{ url_for('auth.change_password_in_app') }}">
+                <span class="fa-solid fa-lock"></span>
+                Change your password.</a>
         </div>
     </div>
 {% endblock %}

@@ -3,7 +3,7 @@ from werkzeug.urls import url_parse
 from flask_login import current_user, login_user, logout_user, login_required
 from app.auth import bp
 from app.auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, \
-    ResetPasswordForm, EditProfileForm
+    ResetPasswordForm, EditProfileForm, ChangePasswordForm
 from app.auth.email import send_password_reset_email
 from app.models import User
 from app import db
@@ -100,3 +100,18 @@ def edit_profile():
         form.last_name.data = current_user.last_name
     return render_template('auth/edit_profile.html', title='Edit Profile',
                            form=form)
+
+
+@bp.route('/change_password_in_app', methods=['GET', 'POST'])
+@login_required
+def change_password_in_app():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if current_user.check_password(form.current_password.data):
+            current_user.set_password(form.new_password.data)
+            db.session.commit()
+            flash('Your password change has been saved.')
+            return redirect(url_for('auth.edit_profile'))
+        else:
+            flash('Password is incorrect.', 'alert-danger')
+    return render_template('auth/change_password_in_app.html', title='Change password', form=form)
