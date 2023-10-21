@@ -47,14 +47,14 @@ def create_app(config_class=Config):
                 # fromaddr='no-reply@' + app.config['MAIL_SERVER'],
                 fromaddr=app.config['MAIL_DEFAULT_SENDER'],
                 toaddrs=app.config['ADMINS'],
-                subject='Microblog Failure',
+                subject='{appname} Failure'.format(appname=app.config['APP_NAME']),
                 credentials=auth, secure=secure)
             mail_handler.setLevel(logging.ERROR)
             app.logger.addHandler(mail_handler)
 
         if not os.path.exists('logs'):
             os.mkdir('logs')
-        file_handler = RotatingFileHandler('logs/microblog.log',
+        file_handler = RotatingFileHandler('logs/{appname}.log'.format(appname=app.config['APP_NAME']),
                                            maxBytes=10240, backupCount=10)
         file_handler.setFormatter(logging.Formatter(
             '%(asctime)s %(levelname)s: %(message)s '
@@ -63,6 +63,6 @@ def create_app(config_class=Config):
         app.logger.addHandler(file_handler)
 
         app.logger.setLevel(logging.INFO)
-        app.logger.info('Microblog startup')
+        app.logger.info('{appname} startup'.format(appname=app.config['APP_NAME']))
 
     return app
