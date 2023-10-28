@@ -37,8 +37,8 @@
               <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
                 <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
                   {{ render_nav_item('main.index', 'Home') }}
-                  {{ render_nav_item('main.index', 'Explore') }}
-                  {{ render_nav_item('main.index', 'About') }}
+                  {{ render_nav_item('main.explore', 'Explore') }}
+                  {{ render_nav_item('main.about', 'About') }}
                 </ul>
                 {% if current_user.is_anonymous %}
                   <a class="btn btn-outline-primary" href="{{url_for('auth.login')}}">Login</a>

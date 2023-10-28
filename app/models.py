@@ -7,14 +7,28 @@ import jwt
 from flask import current_app
 
 
-class User(UserMixin, db.Model):
+user_roles = db.Table('user_roles',
+    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+    db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
+
+
+class Role(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+
+
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
-    first_name = db.Column(db.String(64), index=True)
-    last_name = db.Column(db.String(64), index=True)
-    email = db.Column(db.String(120), index=True, unique=True)
-    password_hash = db.Column(db.String(128))
+    email = db.Column(db.String(128), index=True, unique=True)
+    first_name = db.Column(db.String(80), index=True)
+    last_name = db.Column(db.String(80), index=True)
+    password = db.Column(db.String(255))
+
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    roles = db.relationship(
+        "Role", secondary="user_roles", backref=db.backref("users", lazy="dynamic"))
 
     # messages_sent = db.relationship('Message',
     #                                 foreign_keys='Message.sender_id',
@@ -31,10 +45,10 @@ class User(UserMixin, db.Model):
         return '<User {}>'.format(self.username)
 
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password = generate_password_hash(password)
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.password, password)
 
     def get_reset_password_token(self, expires_in=600):
         return jwt.encode(

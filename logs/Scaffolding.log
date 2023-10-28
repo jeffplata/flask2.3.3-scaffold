@@ -1,0 +1,22 @@
+2023-10-28 14:42:27,874 INFO: Scaffolding startup [in C:\Users\User\Desktop\flask2.3.3-scaffold\app\__init__.py:69]
+2023-10-28 14:42:33,287 ERROR: Exception on /auth/login [POST] [in C:\Users\User\Desktop\flask-bsmo\.venv\lib\site-packages\flask\app.py:1414]
+Traceback (most recent call last):
+  File "C:\Users\User\Desktop\flask-bsmo\.venv\lib\site-packages\flask\app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\User\Desktop\flask-bsmo\.venv\lib\site-packages\flask\app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\User\Desktop\flask-bsmo\.venv\lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\User\Desktop\flask-bsmo\.venv\lib\site-packages\flask\app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "C:\Users\User\Desktop\flask2.3.3-scaffold\app\auth\routes.py", line 21, in login
+    return redirect(url_for('auth.login1'))
+  File "C:\Users\User\Desktop\flask-bsmo\.venv\lib\site-packages\flask\helpers.py", line 225, in url_for
+    return current_app.url_for(
+  File "C:\Users\User\Desktop\flask-bsmo\.venv\lib\site-packages\flask\app.py", line 1697, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\User\Desktop\flask-bsmo\.venv\lib\site-packages\flask\app.py", line 1686, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+  File "C:\Users\User\Desktop\flask-bsmo\.venv\lib\site-packages\werkzeug\routing\map.py", line 950, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'auth.login1'. Did you mean 'auth.login' instead?
