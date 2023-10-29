@@ -1,8 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
-from flask import redirect, url_for, request
 from flask_login import current_user
 from werkzeug.exceptions import Forbidden
+from flask import current_app
 
 db = SQLAlchemy()
 
@@ -16,7 +16,9 @@ def access_required(*roles):
         @wraps(fn)
         def decorated_view(*args, **kwargs):
             if current_user.is_anonymous:
-                return redirect(url_for('auth.login', next=request.url))
+                # next_url = make_next_param(request.url, request.url)
+                # return redirect(url_for('auth.login', next=next_url))
+                return current_app.login_manager.unauthorized()
             uroles = sorted([r.name for r in current_user.roles])
             if len(uroles) >= len(roles):
                 for r in uroles:

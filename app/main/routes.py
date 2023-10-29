@@ -6,7 +6,6 @@ from app.common import access_required
 
 @bp.route('/')
 @bp.route('/index')
-@login_required
 def index():
     return render_template('index.html')
 
@@ -18,6 +17,7 @@ def explore():
 
 
 @bp.route('/about')
+@login_required
 def about():
     return render_template('about.html')
 
