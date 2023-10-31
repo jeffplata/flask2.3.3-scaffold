@@ -17,7 +17,7 @@ build/
 .idea/
 docs/_build/
 .vscode
-app.db
+# app.db
 
 # Coverage reports
 htmlcov/

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Roles</h2>
+<div id="app">
+    <data-table :api-endpoint="'/api_v1/'"
+        :api-init-endpoint="'roles_init'"
+        :api-get-endpoint="'roles'"
+        :api-add-endpoint="'role_add'"
+        :api-edit-endpoint="'role_add'"
+        :api-delete-endpoint="'role_delete'"
+    ></data-table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.2/dist/axios.min.js"></script>
+<script>
+    axios.defaults.headers.common["X-CSRFToken"] = "{{ csrf_token() }}";
+</script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.23.1/dist/bootstrap-vue.min.js"></script>
+<script type="module" src="/static/vueapp.js"></script>
+
+{% endblock %}

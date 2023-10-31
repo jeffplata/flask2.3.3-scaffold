@@ -25,5 +25,9 @@ class Config(object):
     ELASTICSEARCH_URL = os.environ.get('ELASTICSEARCH_URL')
     REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
 
+    # EXPLAIN_TEMPLATE_LOADING = True
+
+    BOOTSTRAP_BOOTSWATCH_THEME = 'flatly'
+
     APP_NAME = 'Scaffolding'
     # APP_BRAND_NAME = 'Scaffolding'

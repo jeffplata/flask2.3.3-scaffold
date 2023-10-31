@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+
+{% block styles %}
+    {{ super() }}
+    <link href="https://cdn.datatables.net/v/dt/dt-1.13.6/datatables.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <div id="htmx-div">
+        <div hx-get="/users_load" hx-trigger="load" hx-target="#htmx-div"></div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/v/dt/dt-1.13.6/datatables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var userDataTable = $('#userTable').DataTable({
+                ajax: '/api/user_data',
+                serverSide: true,
+                processing: true,
+                columns: [
+                    {data: 'username'},
+                    {data: 'email'},
+                    {data: 'first_name'},
+                    {data: 'last_name'},
+                    {
+                        "data": null,
+                        "xrender": function(data, type, row) {
+                            var _next_url = window.location.href
+                            var _href = "/user_edit/"+data.id+"?next="+_next_url
+                            return '<button class="btn btn-secondary btn-sm" hx-get="/user_edit/"'+'0'+' hx-target="#userFormContent"><span class="fa-solid fa-pencil"></span> Edit</button>'
+                        }
+                    }
+                ],
+
+            });
+
+        });
+    </script>
+{%endblock %}

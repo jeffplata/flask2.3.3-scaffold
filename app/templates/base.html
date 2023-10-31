@@ -8,18 +8,18 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        {% block styles %}
-            <style>
-            html {
-                font-size: 15px
-            }
-            </style>
-            <!-- Bootstrap CSS -->
-            {{ bootstrap.load_css() }}
-            <link href="/static/fontawesome/css/fontawesome.css" rel="stylesheet">
-            <link href="/static/fontawesome/css/brands.css" rel="stylesheet">
-            <link href="/static/fontawesome/css/solid.css" rel="stylesheet">
-        {% endblock %}
+        <style>
+        html {
+            font-size: 15px
+        }
+        </style>
+        <!-- Bootstrap CSS -->
+        {{ bootstrap.load_css() }}
+        <link href="https://unpkg.com/bootstrap-vue@2.21.2/dist/bootstrap-vue.css" rel="stylesheet" />
+        <link href="/static/fontawesome/css/fontawesome.css" rel="stylesheet">
+        <link href="/static/fontawesome/css/brands.css" rel="stylesheet">
+        <link href="/static/fontawesome/css/solid.css" rel="stylesheet">
+        {% block styles %}{% endblock %}
 
         <title>{{ config['APP_NAME'] }}</title>
         {% endblock %}
@@ -39,6 +39,20 @@
                   {{ render_nav_item('main.index', 'Home') }}
                   {{ render_nav_item('main.explore', 'Explore') }}
                   {{ render_nav_item('main.about', 'About') }}
+
+                  <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      Users
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                      <a class="dropdown-item" href="#">Users</a>
+                      <a class="dropdown-item" href="{{url_for('main.roles')}}">Roles</a>
+                    </div>
+                  </li>
+
+                  {% if not current_user.is_anonymous and current_user.has_role('admin') %}
+                    {{ render_nav_item('frontend_bp.main', 'Users') }}
+                  {% endif %}
                 </ul>
                 {% if current_user.is_anonymous %}
                   <a class="btn btn-outline-primary" href="{{url_for('auth.login')}}">Login</a>
@@ -58,6 +72,7 @@
             </div>
         </nav>
 
+      
         <div class="container">
 
             {% with messages = get_flashed_messages(with_categories=True) %}
@@ -72,9 +87,9 @@
             {# application content needs to be provided in the content block #}
             {% block content %}{% endblock %}
         </div>
-        {% block scripts %}
-            <!-- Optional JavaScript -->
-            {{ bootstrap.load_js() }}
-        {% endblock %}
+      <!-- Optional JavaScript -->
+      {% block scripts %}
+        {{ bootstrap.load_js() }}
+      {% endblock %}
     </body>
 </html>

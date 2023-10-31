@@ -8,6 +8,7 @@ from flask_mail import Mail
 from logging.handlers import SMTPHandler, RotatingFileHandler
 import logging
 import os
+from flask_wtf.csrf import CSRFProtect
 
 bootstrap = Bootstrap4()
 migrate = Migrate()
@@ -15,6 +16,7 @@ login = LoginManager()
 login.login_view = 'auth.login'
 login.login_message = 'Please log in to access this page.'
 mail = Mail()
+csrf = CSRFProtect()
 
 
 def create_app(config_class=Config):
@@ -26,6 +28,7 @@ def create_app(config_class=Config):
     bootstrap.init_app(app)
     login.init_app(app)
     mail.init_app(app)
+    csrf.init_app(app)
     
     from app.errors import bp as errors_bp
     from app.errors.handlers import forbidden, internal_error, not_found_error
@@ -33,6 +36,11 @@ def create_app(config_class=Config):
     app.register_error_handler(403, forbidden)
     app.register_error_handler(500, internal_error)
     app.register_error_handler(404, not_found_error)
+
+    from app.frontend import frontend_bp
+    app.register_blueprint(frontend_bp)
+    from app.api import api_bp
+    app.register_blueprint(api_bp, url_prefix='/api_v1')
 
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')

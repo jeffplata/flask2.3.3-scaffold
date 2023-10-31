@@ -1,0 +1,21 @@
+
+
+<div id="userFormContent"></div>
+    <h1>Users</h1>
+    <div class="text-center">
+        <a href="{{ url_for('main.user_add', next='/users') }}" class="btn btn-primary btn-sm"><span class="fa-solid fa-plus"></span>Add new user</a>
+        {# <button hx-get="/user_add?next=/users" hx-target="#userFormContent">Add new user</button> #}
+    </div>
+    <table id="userTable" class="table table-striped" style="width: 100%">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>First Name</th>
+        <th>Last name</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+    </table>

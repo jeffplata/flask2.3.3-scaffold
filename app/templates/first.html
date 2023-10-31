@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% import 'bootstrap4/form.html' as wtf %}
+
+{% block content %}
+<h1>Index Page</h1>
+<h3>Flask Scaffolding App</h3>
+<p>
+    <ul>
+        <li>SQLAlchemy</li>
+        <li>Bootstrap 4 (bootstrap-flask)</li>
+        <li>Font Awesome 6.4.2</li>
+        <li>Authentication (flask-login)</li>
+        <li>Simple RBAC</li>
+        <li>Blueprints</li>
+    </ul>
+    <p/>
+        Notes:
+    <ol>
+        <li>Modify config file.</li>
+        <li>Add user:admin and role:admin with flask shell</li>
+        <li>Assign user admin to role admin</li>
+    </ol>
+    <p/>
+    {% if current_user.is_anonymous %}
+    <p>
+        <a href="{{url_for('auth.login')}}">Login</a> to see more.
+    </p>
+    {% endif %}
+
+    {% if form %}
+    {{ wtf.render_form(form) }}
+    {% endif %}
+</p>
+{% endblock %}

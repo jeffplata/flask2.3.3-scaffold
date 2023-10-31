@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block styles %}
+    {{ super() }}
+    <link href="https://cdn.datatables.net/v/dt/dt-1.13.6/datatables.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div id="userFormContent"></div>
+    <h1>Users</h1>
+    <div class="text-center">
+        {# <a href="{{ url_for('main.user_add', next='/users') }}" class="btn btn-primary btn-sm"><span class="fa-solid fa-plus"></span>Add new user</a> #}
+        <button hx-get="/user_add?next=/users" hx-target="#userFormContent">Add new user</button>
+    </div>
+    <table id="userTable" class="table table-striped" style="width: 100%">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>First Name</th>
+        <th>Last name</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+    </table>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/v/dt/dt-1.13.6/datatables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var userDataTable = $('#userTable').DataTable({
+                ajax: '/api/user_data',
+                serverSide: true,
+                processing: true,
+                columns: [
+                    {data: 'username'},
+                    {data: 'email'},
+                    {data: 'first_name'},
+                    {data: 'last_name'},
+                    {
+                        "data": 'id',
+                        "render": function(data, type, row) {
+                            var _next_url = window.location.href
+                            var _href = "/user_edit/"+data.id+"?next="+_next_url
+                            return '<button class="btn btn-secondary btn-sm" hx-get="/user_edit/"'+'0'+' hx-target="#userFormContent"><span class="fa-solid fa-pencil"></span> Edit</button>'
+                        }
+                    }
+                ],
+
+            });
+
+        });
+
+    </script>
+{% endblock %}
