@@ -1,6 +1,6 @@
 import { ref, watch } from 'vue';
 
-export default function DataTable() {
+export default function useDataTable() {
     const flashMessage = ref('Here data-table will rise.')
     const flashMessageVariant = ref('warning')
     var adding = ref(false)
@@ -19,32 +19,50 @@ export default function DataTable() {
 
     items.value = [{id:1, 'name':'John', 'handle':'bob'},
         {id:2,'name':'allan','handle':'sap'},
-        {id:2,'name':'kay','handle':'lank'},
-        {id:2,'name':'archivald','handle':'zinc'},
-        {id:2,'name':'terry','handle':'samayp'},
+        {id:3,'name':'kay','handle':'lank'},
+        {id:4,'name':'archivald','handle':'zinc'},
+        {id:5,'name':'terry','handle':'samayp'},
     ]
-    totalRows = items.value.length
+
+    items.value.forEach(el => {
+        el.selected = false
+    })
+
+    // totalRows = items.value.length
+    totalRows = 123
 
     fields.value = ['id', {'key':'name', 'sortable':'true'}, 
-        {'key':'handle', 'sortable':true}]
+        {'key':'handle', 'sortable':true}, 'selected']
 
     fields.value.forEach(el => {
         if (typeof el!='string') {
-            el.sortdesc = 'false'
+            el.sortdesc = false
         }
     });
 
     let optionN = perPageOptions
-    perPageOptions.value = optionN.value.map(n => ({'value': n, 'label': `${n} items`}))
+    perPageOptions.value = optionN.value.map(n => ({value: n, label: `${n} items`}))
     perPage.value = JSON.parse(localStorage.getItem('perPage')) || '10'
 
-    watch(perPage, (oldVal, newVal) => {
+
+    watch(perPage, (newVal, oldVal) => {
         if (typeof oldVal != 'undefined') {
             currentPage = 1
             // fetchData('page')
             localStorage.setItem('perPage', JSON.stringify(newVal));
         }
     })
+
+    
+    function unselectRows(exemptRow) {
+        for (let i=0; i < items.value.length; i++) {
+          if ((exemptRow !== undefined) && (i !== exemptRow)) {
+            if (items.value[i].selected) {
+              items.value[i].selected = false
+            }
+          }
+        }
+      }
 
     function onRowSelected(items) {
         selected.value = items
@@ -78,7 +96,7 @@ export default function DataTable() {
         items, fields,
         currentPage, perPage, perPageOptions, totalRows,
         onRowSelected, onFiltered, onSortChanged, onSubmitForm,
-        onPageChange,
+        onPageChange, unselectRows,
         sortBy, sortDesc, filter,
     }
 }

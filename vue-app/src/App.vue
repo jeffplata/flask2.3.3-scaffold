@@ -13,7 +13,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div class="container">
     <data-table :apiEndpoint="'/api_v1/'"></data-table>
   </div>
 </template>

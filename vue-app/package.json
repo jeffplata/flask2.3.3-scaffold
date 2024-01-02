@@ -5,7 +5,8 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "build-lib": "vue-cli-service build --inline-vue --target lib --name data-table src/components/dataTable.vue"
   },
   "dependencies": {
     "@coreui/bootstrap-vue": "^1.0.0-beta.0",

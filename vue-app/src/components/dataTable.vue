@@ -1,25 +1,25 @@
 <template>
   <div>
 
-    <CAlert color="info" dismissible>
-      <strong>Go right ahead</strong> and click that dimiss over there on the right.
-    </CAlert>
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+      <strong>Here</strong> datatables will rise.
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 
-    
     <div id="edit_form" v-if="editing" class="edit-section col-md-6 ">
         <h2><div v-if="adding">Add user</div><div v-else>Edit user "form.username"</div></h2>
         <form @submit.prevent="onSubmitForm">
           <slot name="editForm"></slot>
 
           <button
-              type = "submit"
-              variant="primary"
-              class="mr-1"
+              class="btn btn-primary me-1"
+              type="submit"
           >Submit</button>
 
           <button
-              @click="editing = adding = false"
-              variant="secondary"
+              @click.prevent="editing = adding = false"
+              class="btn btn-secondary"
+              type="button"
           >Cancel</button>
         </form>
     </div>
@@ -32,17 +32,27 @@
                 <div class="col-sm-7 my-2">
                     <button
                             @click="editing = adding = true"
-                            class="btn btn-primary"><i class="fa fa-plus"></i><span class="xxd-none d-md-inline"> Add [[capitalize(title_s)]]</span></button>
-                    <span v-if="Object.keys(selected).length===0">
-                    <small class="text-muted ml-2" >Click a row to edit or delete.</small>
-                    </span>
+                            class="btn btn-primary">
+                            <i class="fa fa-plus"></i>
+                            <span class="d-none d-md-inline"> Add [[capitalize(title_s)]]</span>
+                    </button>
+                    <!-- <small v-if="Object.keys(selected).length===0" class="text-muted ms-2"> -->
+                    <small v-if="!selected.length" class="text-muted ms-2">
+                      Click a row to edit or delete.
+                    </small>
                     <span v-else>
                         <button
                                 @click="editing = true"
-                                class="btn btn-secondary"><i class="fa fa-pencil"></i><span class="d-none d-md-inline"> Edit</span></button>
+                                class="btn btn-secondary ms-1">
+                                <i class="fa fa-pencil"></i>
+                                <span class="d-none d-md-inline"> Edit</span>
+                        </button>
                         <button
                                 @click="showMsgBoxConfirm"
-                                class="btn btn-secondary"><i class="fa fa-trash"></i><span class="d-none d-md-inline"> Delete</span></button>
+                                class="btn btn-secondary ms-1">
+                                <i class="fa fa-trash">
+                                </i><span class="d-none d-md-inline"> Delete</span>
+                        </button>
                     </span>
                 </div>
 
@@ -51,64 +61,105 @@
                 </div>
             </div>
 
-        <!-- table here -->
-        <tableBare :items="items"
+        <!-- <table-bare :items="items"
                    :fields="fields"
-                   :sortBy="sortBy"
-                   :sortDesc="sortDesc"
+                   :sort-by="sortBy"
+                   :sort-desc="sortDesc"
                    @changeSortBy="changeSortBy"
-        ></tableBare>
+                   @rowClick="rowClick"
+        ></table-bare> -->
+        <!-- table section -->
+        <!-- <template> -->
+          <table class="table table-hover">
+              <thead>
+                  <tr>
+                      <th v-for="(fld, index) in fields" v-bind:key="index"
+                          @click="onHeaderClick(fld)"
+                      >
+                          <span v-if="(typeof fld==='string')" >
+                              [[fld]]
+                          </span>
+                          <span v-else>[[fld.key]]
+                              <i v-if="(['true', true].includes(fld.sortable))" 
+                                  class="fas"
+                                  :class="{'fa-sort sort-off': sortBy!=fld.key,
+                                    'fa-sort-down': sortBy==fld.key && !sortDesc,
+                                    'fa-sort-up': sortBy==fld.key && sortDesc,
+                                    }"
+                                  >
+                              </i>
+                          </span>
+                          <span 
+                              v-if="typeof fld==='string' ? sortBy==fld : sortBy==fld.key " 
+                              class="badge text-bg-light sort-badge"
+                              @click.stop="onClickSortBadge">x</span>
+                      </th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr v-for="(v1, k1) in items" v-bind:key="k1"
+                      :class="{'table-active' : v1.selected}"
+                      @click="onRowClick(v1, k1)">
+                      <td v-for="(v2, k2) in v1" v-bind:key="k2">
+                          <template v-if="fields_simple.includes(k2)">[[v2]]</template></td>
+                  </tr>
+              </tbody>
+          </table>
+      <!-- </template> -->
 
 
-
-        <div class="form-row">
-          <b-input-group v-if="totalRows>0">
-            <div class="col-xs-4 mr-2">
-                <CFormSelect v-model="perPage" :options="perPageOptions" style="width:100px;"></CFormSelect>
+        <div v-if="totalRows>0" class="row">
+            <div class="col-md-2 mb-1">
+                <select v-model="perPage" class="form-select" id="perPageOptions">
+                  <option v-for="(opt, idx) in perPageOptions" v-bind:key="idx" :value="opt.value" >
+                    [[opt.label]]
+                  </option>
+                </select>
             </div>
-            <div class="col-xs-8">
-              <b-pagination
-                v-model="currentPage"
+            <div class="col-md-8 mb-1">
+              <pagination-bare
+                :current-page="currentPage"
                 :total-rows="totalRows"
                 :per-page="perPage"
-                aria-controls="my-table"
-                @change="onPageChange"
-              ></b-pagination>
+                @pageChanged="pageChanged"
+              ></pagination-bare>
             </div>
-          </b-input-group>
         </div>
 
     </div>
     <!-- <div v-else>No data to display.</div> -->
-
+    <input v-model
   </div>
 </template>
 
 
 
 <script>
-import DataTable from '@/components/dataTable.js';
+import useDataTable from '@/components/dataTable.js';
 import { useCapitalize } from '@/composables/stringUtils';
-import { ref } from 'vue';
-import tableBare from './tableBare.vue';
-import { CAlert, CFormSelect,
-        } from '@coreui/bootstrap-vue';
-
+import useTable from '@/components/table.js';
+// import { ref } from 'vue';
+import TableBare from '@/components/tableBare.vue';
+import PaginationBare from '@/components/paginationBare.vue';
 
 export default {
+    name: 'data-table',
     components: {
-      tableBare,
-      CAlert, CFormSelect,
-    },
+    PaginationBare,
+    
+},
     props: ['apiEndpoint'],
-    setup(props) {
+    setup(props, ctx) {
 
         const { flashMessage, flashMessageVariant, 
           adding, editing, title, selected, items, fields,
           currentPage, perPage, perPageOptions, totalRows,
           onRowSelected, onFiltered,
           onSortChanged, onSubmitForm, onPageChange,
-          sortBy, sortDesc, filter } = DataTable();
+          unselectRows,
+          sortBy, sortDesc, filter } = useDataTable();
+
+        const { fields_simple } = useTable(ctx, fields, sortBy, sortDesc);
         console.log(props.apiEndpoint)
 
         // mutate title
@@ -120,19 +171,20 @@ export default {
 
         editing.value = false
         
-        const mybtableRef = ref(null)
-
         function showMsgBoxConfirm() {
           // dummy
         }
 
-        function onRowClicked(item, index) {
-          const mybtable = mybtableRef.value;
-          console.log(mybtableRef.value)
-          if (mybtable) {
-            console.log('clicked')
-            mybtable.selectRow(index)
-          }
+        function pageChanged(page) {
+          currentPage.value = page
+          // fetchData('page')
+        }
+
+        function onRowClick(rowData, idx) {
+          unselectRows(idx)
+          rowData.selected = !rowData.selected
+          selected.value = rowData.selected ? [rowData] : []
+          console.log(selected.value)
         }
 
         function changeSortBy(sortByVal, sortDescVal) {
@@ -152,11 +204,29 @@ export default {
             items, fields,
             currentPage, perPage, perPageOptions, totalRows,
             sortBy, sortDesc, filter,
-            onRowClicked, onRowSelected, onFiltered, onSortChanged,
+            onRowSelected, onFiltered, onSortChanged,
             onSubmitForm, onPageChange,
-            mybtableRef, changeSortBy,
+            changeSortBy, 
+            pageChanged,
+
+            fields_simple, onRowClick,
             }
     }
 }
 
+export {PaginationBare, TableBare };
 </script>
+
+<style scoped>
+  @import 'bootstrap/dist/css/bootstrap.min.css';
+
+  .sort-off {
+      color: lightgray
+  }
+
+  .sort-badge {
+      cursor: pointer;
+      float: right;
+  }
+
+</style>
