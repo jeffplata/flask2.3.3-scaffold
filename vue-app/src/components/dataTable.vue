@@ -2,7 +2,7 @@
   <div>
 
     <CAlert color="info" dismissible>
-      <strong>Go right ahead</strong> and click that dimiss over there on the right.
+      <strong>Here</strong> datatables will rise.
     </CAlert>
 
     
@@ -11,16 +11,17 @@
         <form @submit.prevent="onSubmitForm">
           <slot name="editForm"></slot>
 
-          <button
-              type = "submit"
-              variant="primary"
-              class="mr-1"
-          >Submit</button>
+          <CButton
+              color="primary"
+              class="me-1"
+              type="submit"
+          >Submit</CButton>
 
-          <button
-              @click="editing = adding = false"
-              variant="secondary"
-          >Cancel</button>
+          <CButton
+              @click.prevent="editing = adding = false"
+              color="secondary"
+              type="cancel"
+          >Cancel</CButton>
         </form>
     </div>
 
@@ -30,19 +31,25 @@
             <div v-if="totalRows>0" class="form-row">
 
                 <div class="col-sm-7 my-2">
-                    <button
+                    <CButton
                             @click="editing = adding = true"
-                            class="btn btn-primary"><i class="fa fa-plus"></i><span class="xxd-none d-md-inline"> Add [[capitalize(title_s)]]</span></button>
+                            color="primary"><i class="fa fa-plus"></i>
+                            <span class="xxd-none d-md-inline"> Add [[capitalize(title_s)]]</span>
+                    </CButton>
                     <span v-if="Object.keys(selected).length===0">
-                    <small class="text-muted ml-2" >Click a row to edit or delete.</small>
+                    <small class="text-muted ms-2" >Click a row to edit or delete.</small>
                     </span>
                     <span v-else>
-                        <button
+                        <CButton
                                 @click="editing = true"
-                                class="btn btn-secondary"><i class="fa fa-pencil"></i><span class="d-none d-md-inline"> Edit</span></button>
-                        <button
+                                class="ms-1"
+                                color="secondary"><i class="fa fa-pencil">
+                                </i><span class="d-none d-md-inline"> Edit</span></CButton>
+                        <CButton
                                 @click="showMsgBoxConfirm"
-                                class="btn btn-secondary"><i class="fa fa-trash"></i><span class="d-none d-md-inline"> Delete</span></button>
+                                class="ms-1"
+                                color="secondary"><i class="fa fa-trash">
+                                </i><span class="d-none d-md-inline"> Delete</span></CButton>
                     </span>
                 </div>
 
@@ -51,31 +58,31 @@
                 </div>
             </div>
 
-        <!-- table here -->
         <tableBare :items="items"
                    :fields="fields"
                    :sortBy="sortBy"
                    :sortDesc="sortDesc"
                    @changeSortBy="changeSortBy"
+                   @rowClick="rowClick"
         ></tableBare>
 
 
 
         <div class="form-row">
-          <b-input-group v-if="totalRows>0">
+          <CInputGroup v-if="totalRows>0">
             <div class="col-xs-4 mr-2">
-                <CFormSelect v-model="perPage" :options="perPageOptions" style="width:100px;"></CFormSelect>
+                <CFormSelect v-model="perPage" :options="perPageOptions" id="perPageOptions" style="width:100px;"></CFormSelect>
             </div>
-            <div class="col-xs-8">
-              <b-pagination
-                v-model="currentPage"
-                :total-rows="totalRows"
-                :per-page="perPage"
-                aria-controls="my-table"
-                @change="onPageChange"
-              ></b-pagination>
+            <div class="col-xs-8 ms-1">
+              <CPagination aria-label="Page navigation example">
+                <CPaginationItem aria-label="Previous" href="#"><span aria-hidden="true">&laquo;</span></CPaginationItem>
+                <CPaginationItem href="#">1</CPaginationItem>
+                <CPaginationItem href="#">2</CPaginationItem>
+                <CPaginationItem href="#">3</CPaginationItem>
+                <CPaginationItem aria-label="Next" href="#"><span aria-hidden="true">&raquo;</span></CPaginationItem>
+              </CPagination>
             </div>
-          </b-input-group>
+          </CInputGroup>
         </div>
 
     </div>
@@ -91,15 +98,17 @@ import DataTable from '@/components/dataTable.js';
 import { useCapitalize } from '@/composables/stringUtils';
 import { ref } from 'vue';
 import tableBare from './tableBare.vue';
-import { CAlert, CFormSelect,
+import { CAlert, CFormSelect, CInputGroup, CButton,
+         CPagination, CPaginationItem,
         } from '@coreui/bootstrap-vue';
 
 
 export default {
     components: {
-      tableBare,
-      CAlert, CFormSelect,
-    },
+    tableBare,
+    CAlert, CFormSelect, CInputGroup, CButton,
+    CPagination, CPaginationItem,
+},
     props: ['apiEndpoint'],
     setup(props) {
 
@@ -108,6 +117,7 @@ export default {
           currentPage, perPage, perPageOptions, totalRows,
           onRowSelected, onFiltered,
           onSortChanged, onSubmitForm, onPageChange,
+          unselectRows,
           sortBy, sortDesc, filter } = DataTable();
         console.log(props.apiEndpoint)
 
@@ -126,13 +136,10 @@ export default {
           // dummy
         }
 
-        function onRowClicked(item, index) {
-          const mybtable = mybtableRef.value;
-          console.log(mybtableRef.value)
-          if (mybtable) {
-            console.log('clicked')
-            mybtable.selectRow(index)
-          }
+        function rowClick(rowData, idx) {
+          unselectRows(idx)
+          rowData.selected = !rowData.selected
+          selected.value = rowData.selected ? [rowData] : []
         }
 
         function changeSortBy(sortByVal, sortDescVal) {
@@ -152,9 +159,9 @@ export default {
             items, fields,
             currentPage, perPage, perPageOptions, totalRows,
             sortBy, sortDesc, filter,
-            onRowClicked, onRowSelected, onFiltered, onSortChanged,
+            onRowSelected, onFiltered, onSortChanged,
             onSubmitForm, onPageChange,
-            mybtableRef, changeSortBy,
+            mybtableRef, changeSortBy, rowClick,
             }
     }
 }

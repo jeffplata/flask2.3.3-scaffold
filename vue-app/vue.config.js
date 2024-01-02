@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const { defineConfig } = require('@vue/cli-service')
 module.exports = defineConfig({
   transpileDependencies: true,
@@ -7,8 +8,9 @@ module.exports = defineConfig({
       .rule('vue')
       .use('vue-loader')
       .tap(options => {
-        options.compilerOptions = { delimiters : [ '[[', ']]' ] }
+        options.compilerOptions = { 
+          delimiters : [ '[[', ']]' ]        }
         return options
       })
-  }
+  },
 })
