@@ -39,7 +39,8 @@ def users():
     # return render_template('users.html', users=users)
 
     # return render_template('0.html')
-    return render_template('index.html')
+    # return render_template('index.html')
+    return render_template('users_vue.html')
 
 
 @bp.route('/users_load')
