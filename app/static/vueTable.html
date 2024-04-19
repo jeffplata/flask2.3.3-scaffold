@@ -4,16 +4,13 @@
 </div>
 
 <div id="edit_form" v-if="editing" class="col-md-6 ">
-    <h2><div v-if="adding">Add user</div><div v-else>Edit user [form.username]</div></h2>
-    <!-- <form>
-        <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <input type="text" class="form-control" id="name">
-        </div>
-    </form> -->
-    <slot></slot>
-    <button type="button" class="btn btn-primary me-1">Save</button>
-    <button @click="editing=adding=false; selected = []" type="button" class="btn btn-secondary">Cancel</button>
+    <h2><div v-if="adding">Add [[pluralize(1,title)]] </div><div v-else>Edit [[pluralize(1,title)]] [[selected[0][name_field] ]]</div></h2>
+    <form @submit.prevent="saveEdit">
+        <slot :mydata = "formData"></slot>
+        <button type="submit" class="btn btn-primary me-1">Save</button>
+        
+        <button @click="undoEdit" type="button" class="btn btn-secondary">Cancel</button>
+    </form>
 </div>
 
 <table v-if="!editing" class="table table-striped table-hover">
@@ -44,9 +41,27 @@
     </thead>
     <tbody>
         <tr v-for="(v1, k1) in items" v-bind:key="k1"
-            @click="onClickRow(v1)">
-            <td v-for="(v2, k2) in v1" v-bind:key="k2">[[v2]]</td>
+            @click="onClickRow(v1, k1)">
+            <!-- <td v-for="(v2, k2) in v1" v-bind:key="k2">[[v2]]</td> -->
+            <td v-for="fld in fieldsOrder" v-bind:key = "fld">[[v1[fld] ]]</td>
         </tr>
     </tbody>
 </table>
-<div v-if="selected.length">[[selected[0].name]]</div>
+
+<form class="row" v-if="!(adding || editing)">
+    <div class="col-xs-3 col-md-1">
+        <select class="form-select form-select-sm" v-model="perPage">
+            <option v-for="i in perPageOptions" :value="i.value">[[i.text]]</option>
+        </select>
+    </div>
+    <div class="col-xs-9 col-md-11">
+        <!-- key="totalRows" ensures re-rendering of vue-pagination on totalRows value update -->
+        <vue-pagination
+         :current-page=currentPage :total-rows=totalRows :per-page=perPage 
+         :key="`${perPage}+${totalRows}`"
+         @pageChanged="onPageChanged"
+        >
+
+        </vue-pagination>
+    </div>
+</form>

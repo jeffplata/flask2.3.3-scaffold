@@ -7,11 +7,11 @@ import json
 from app.models import Role
 
 
-@api_bp.route("/user_init")  # Blueprints don't use the Flask "app" context. They use their own blueprint's
-def init():
-    data = {'title': 'user|users'}
+@api_bp.route("/users_init")  # Blueprints don't use the Flask "app" context. They use their own blueprint's
+def user_init():
+    data = {'title': 'user|users',
+            'name_field': 'username'}
     return data
-
 
 @api_bp.route("/users")
 def users():
