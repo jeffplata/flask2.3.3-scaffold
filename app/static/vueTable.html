@@ -5,15 +5,12 @@
 
 <div id="edit_form" v-if="editing" class="col-md-6 ">
     <h2><div v-if="adding">Add user</div><div v-else>Edit user [form.username]</div></h2>
-    <!-- <form>
-        <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <input type="text" class="form-control" id="name">
-        </div>
-    </form> -->
-    <slot></slot>
-    <button type="button" class="btn btn-primary me-1">Save</button>
-    <button @click="editing=adding=false; selected = []" type="button" class="btn btn-secondary">Cancel</button>
+    <form @submit.prevent="saveEdit">
+        <slot :mydata = "formData"></slot>
+        <button type="submit" class="btn btn-primary me-1">Save</button>
+        
+        <button @click="undoEdit" type="button" class="btn btn-secondary">Cancel</button>
+    </form>
 </div>
 
 <table v-if="!editing" class="table table-striped table-hover">
@@ -44,9 +41,8 @@
     </thead>
     <tbody>
         <tr v-for="(v1, k1) in items" v-bind:key="k1"
-            @click="onClickRow(v1)">
+            @click="onClickRow(v1, k1)">
             <td v-for="(v2, k2) in v1" v-bind:key="k2">[[v2]]</td>
         </tr>
     </tbody>
 </table>
-<div v-if="selected.length">[[selected[0].name]]</div>

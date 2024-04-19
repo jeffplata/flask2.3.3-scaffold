@@ -26,6 +26,7 @@ const VueTable = {
             {id: 4, name: 'Gandalf', age: 138},
             {id: 5, name: 'Randolph', age: 12}]
         )
+        const formData = ref(null)
 
         const sortState = ref({
             key: '',
@@ -59,19 +60,35 @@ const VueTable = {
             }
         }
 
-        function onClickRow(row) {
+        function onClickRow(row, id) {
             flashMessage.value = row
             editing.value = true
             selected.value = [row]
+            formData.value = {...row}
+        }
+
+        function saveEdit() {
+            adding.value = editing.value = false
+            if (formData.value) {
+                const itemIndex = items.value.findIndex((i) => i.id === formData.value.id);
+                items.value[itemIndex] = { ...formData.value }
+                formData.value = null
+            }
+        }
+
+        function undoEdit() {
+            adding.value = editing.value = false
+            formData.value = null
         }
 
         function onClickCloseAlert() {
             flashMessage.value = ''
         }
 
-        return { editing, adding, selected, selectedName,
+        return { editing, adding, selected, selectedName, formData,
             flashMessage, fields, items, sortState,
-            onHeaderClick, onClickSortBadge, onClickRow, onClickCloseAlert,
+            onHeaderClick, onClickSortBadge, onClickRow, onClickCloseAlert, 
+            undoEdit, saveEdit,
              }
     },
     delimiters: ['[[',']]'],
