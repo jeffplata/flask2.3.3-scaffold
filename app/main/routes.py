@@ -29,7 +29,8 @@ def about():
 @bp.route('/roles')
 @access_required('admin')
 def roles():
-    return render_template('roles.html')
+    # return render_template('roles.html')
+    return render_template('roles_vue.html')
 
 
 @bp.route('/users')

@@ -33,8 +33,7 @@ def paginate(query, start, limit):
 def process_form_data(data, model):
     if data['id'] == '-1':  # New record
         instance = model(**data)
-        instance.id = None  # let the autoincrement work
-        # db.session.add(instance)
+        db.session.add(instance)
     else:  # Existing record
         instance = model.query.get(int(data['id']))
         for key, value in data.items():
@@ -60,30 +59,19 @@ def get_items(model_class, filters, request_args):
     return query, total_rows
 
 
-def edit_item(data, form_class, model_class, item_instance=None, before_commit_callback=None, edit_exception_callback=None):
+def edit_item(data, form_class, model_class, before_commit_callback=None):
     form = form_class(**data)
-    message = 'Please correct errors in the form.'
     if form.validate():
         try:
-            # the item instance can be defined at the calling item edit (xxx_edit) function
-            # ... or generically built in this function if None is passed
-            if not item_instance:
-                item_instance = process_form_data(data, model_class)
-            if data['id'] == '-1':
-                db.session.add(item_instance)
+            item = process_form_data(data, model_class)
             if before_commit_callback:
-                before_commit_callback(item_instance, data)
+                before_commit_callback(item, data)
             db.session.commit()
-            return jsonify({'result': 'ok', 'newId': item_instance.id})
+            return jsonify({'result': 'ok', 'newId': item.id})
         except Exception as e:
             db.session.rollback()
-            if edit_exception_callback:
-                # set form.errors in the callback
-                edit_exception_callback(e, form)
-            else:
-                message = 'Error: Your changes cannot be saved.'
-            return jsonify({'result': 'failed', 'errors': form.errors, 'message': message})
-    return jsonify({'result': 'failed', 'errors': form.errors, 'message': message})
+            return jsonify({'result': 'failed', 'message': 'Error: Your changes cannot be saved.'})
+    return jsonify({'result': 'failed', 'errors': form.errors})
 
 
 def delete_item(model_class, item_id, before_delete_callback=None):
@@ -127,40 +115,10 @@ def user_before_commit_callback(user, data):
     if data['id'] == '-1':
         user.set_password('Password1')
 
-        
-def user_edit_exception_callback(e, form):
-    if 'UNIQUE' in e.args[0]:
-        if 'user.username' in e.args[0]:
-            form.username.errors = ['Please use a different user name.']
-        if 'user.email' in e.args[0]:
-            form.email.errors = ['Please use a different email address.']
-
-
-# @api_bp.route("/user_edit", methods=['POST'])
-# def user_edit():
-#     data = request.json
-#     return edit_item(data, UserForm, User, user_before_commit_callback)
-
-
 @api_bp.route("/user_edit", methods=['POST'])
 def user_edit():
     data = request.json
-    
-    if data['id'] == '-1':
-        user = User(username=data.get('username', ''),
-                    email=data.get('email', ''),
-                    first_name=data.get('first_name', ''),
-                    last_name=data.get('last_name', ''),
-                    )
-        user.set_password('Password1')
-        # db.session.add(user)
-    else:
-        user = User.query.get(int(data['id']))
-        user.username = data.get('username', '')
-        user.first_name = data.get('first_name', '')
-        user.last_name = data.get('last_name', '')
-
-    return edit_item(data, UserForm, User, user, user_before_commit_callback)
+    return edit_item(data, UserForm, User, user_before_commit_callback)
 
 
 def user_before_delete_callback(user):

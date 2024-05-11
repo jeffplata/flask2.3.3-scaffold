@@ -32,3 +32,7 @@ export function capitalize(data) {
     });
     return capitalized.join(' ');
 }
+
+export function formatColumnTitle(str) {
+    return capitalize(str.replace('_', ' '))
+}

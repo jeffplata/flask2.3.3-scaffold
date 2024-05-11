@@ -1,0 +1,204 @@
+from app.api import api_bp
+from app.models import User
+from flask import jsonify, request
+from app import db
+from app.main.forms import UserForm, RoleForm
+import json
+from app.models import Role
+
+
+@api_bp.route("/users_init")  # Blueprints don't use the Flask "app" context. They use their own blueprint's
+def user_init():
+    data = {'title': 'user|users',
+            'name_field': 'username'}
+    return data
+
+@api_bp.route("/users")
+def users():
+    query = User.query
+
+    # filter
+    filtertext = request.args.get('filtertext')
+    if filtertext:
+        query = query.filter(db.or_(
+            User.username.contains(f'{filtertext}'),
+            User.email.contains(f'{filtertext}'),
+            User.first_name.contains(f'{filtertext}'),
+            User.last_name.contains(f'{filtertext}')
+        ))
+
+    #sort
+    sortby = request.args.get('sortby')
+    if sortby:
+        col = getattr(User, sortby)
+        descending = request.args.get('sortdesc')
+        if descending == 'true':
+            col = col.desc()
+        query = query.order_by(col)
+
+    # pagination
+    start = request.args.get('start')
+    limit = request.args.get('limit')
+    totalrows = query.count()
+    query = query.offset(start).limit(limit)
+
+    fieldnames = ['id', 
+                  {'key': 'username', 'sortable': 'true'},
+                  {'key': 'email', 'sortable': 'true'},
+                  {'key': 'first_name', 'sortable': 'true'},
+                  {'key': 'last_name', 'sortable': 'true'},
+                  ]
+    data = list([u.to_dict() for u in query])
+    return jsonify({'fieldnames': fieldnames,
+                    'data': data,
+                    'totalrows': totalrows,
+                    })
+
+
+@api_bp.route("/user_edit", methods=['GET', 'POST'])
+def user_edit():
+    message = ''
+    data = json.loads(json.dumps(request.json))
+    form = UserForm(**data)
+    if form.validate():
+        if data['id'] == '-1':
+            user = User(username=data.get('username', ''),
+                        email=data.get('email', ''),
+                        first_name=data.get('first_name', ''),
+                        last_name=data.get('last_name', ''),
+                        )
+            user.set_password('Password1')
+            db.session.add(user)
+        else:
+            user = User.query.get(int(data['id']))
+            user.username = data.get('username', '')
+            user.first_name = data.get('first_name', '')
+            user.last_name = data.get('last_name', '')
+        try:
+            db.session.commit()
+            newid = user.id
+            return jsonify({'result': 'ok', 'newId': newid})
+        except Exception as e:
+            db.session.rollback()
+            if 'UNIQUE' in e.args[0]:
+                if 'user.username' in e.args[0]:
+                    form.username.errors = ['Please use a different user name.']
+                if 'user.email' in e.args[0]:
+                    form.email.errors = ['Please use a different email address.']
+            else:
+                message = 'Error: Your changes cannot be saved.'
+            return jsonify({'result': 'failed', 'errors': form.errors, 'message': message})
+
+    return {'result': 'failed', 'errors': form.errors}
+
+
+@api_bp.route("/user_delete", methods=['POST'])
+def user_delete():
+    user = User.query.get(request.args.get('id'))
+    if user:
+        if user.email == 'admin@email.com':
+            return {'result': 'failed', 'message': 'You are not allowed to delete this record.'}
+        else:
+            try:
+                db.session.delete(user)
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                return {'result': 'failed', 'message': 'Failed to delete.'}
+            return {'result': 'ok'}
+    return {'result': 'failed', 'message': 'Record not found.'}
+
+
+@api_bp.route("/roles_init")
+def roles_init():
+    data = {'title': 'role|roles',
+            'name_field': 'name'}
+    return data
+
+
+@api_bp.route("/roles")
+def roles():
+    query = Role.query
+
+    # filter
+    filtertext = request.args.get('filtertext')
+    if filtertext:
+        query = query.filter(db.or_(
+            Role.name.contains(f'{filtertext}'),
+            Role.description.contains(f'{filtertext}'),
+        ))
+
+    #sort
+    sortby = request.args.get('sortby')
+    if sortby:
+        col = getattr(Role, sortby)
+        descending = request.args.get('sortdesc')
+        if descending == 'true':
+            col = col.desc()
+        query = query.order_by(col)
+
+    # pagination
+    start = request.args.get('start')
+    limit = request.args.get('limit')
+    totalrows = query.count()
+    query = query.offset(start).limit(limit)
+
+    fieldnames = ['id', {'key': 'name', 'sortable': 'true'},
+                  {'key': 'description', 'sortable': 'true'},
+                  ]
+    data = list([{'id':r.id,
+                  'name':r.name, 
+                  'description':r.description} for r in query])
+    return jsonify({'fieldnames': fieldnames,
+                    'data': data,
+                    'totalrows': totalrows,
+                    })
+
+
+@api_bp.route("/role_edit", methods=['GET', 'POST'])
+def role_edit():
+    message = ''
+    data = json.loads(json.dumps(request.json))
+    form = RoleForm(**data)
+    if form.validate():
+        if data['id'] == '-1':
+            role = Role(name=data.get('name', ''),
+                        description=data.get('description', ''),
+                        )
+            db.session.add(role)
+        else:
+            role = Role.query.get(int(data['id']))
+            role.name = data.get('name', '')
+            role.description = data.get('description', '')
+        try:
+            db.session.commit()
+            newid = role.id
+            return jsonify({'result': 'ok', 'newId': newid})
+        except Exception as e:
+            db.session.rollback()
+            if 'UNIQUE' in e.args[0]:
+                if 'role.name' in e.args[0]:
+                    form.name.errors = ['Please use a different role name.']
+            else:
+                message = 'Error: Your changes cannot be saved.'
+            return jsonify({'result': 'failed', 'errors': form.errors, 'message': message})
+
+    return {'result': 'failed',
+            'errors': form.errors}
+
+
+@api_bp.route("/role_delete", methods=['POST'])
+def role_delete():
+    role = Role.query.get(request.args.get('id'))
+    if role:
+        if role.name == 'admin':
+            return {'result': 'failed', 'message': 'You are not allowed to delete this record.'}
+        else:
+            try:
+                db.session.delete(role)
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                return {'result': 'failed', 'message': 'Failed to delete.'}
+            return {'result': 'ok'}
+    return {'result': 'failed', 'message': 'Record not found.'}

@@ -1,7 +1,6 @@
-import { changeSort, capitalize, pluralize } from './vueTableUtils.js';
-// import VuePagination from './vuePagination.js';
+import { changeSort, formatColumnTitle, pluralize, capitalize } from './vueTableUtils.js';
 
-const { ref, computed, watch, onMounted } = Vue;
+const { ref, reactive, computed, watch, onMounted } = Vue;
 
 const templateCache = ref(null)
 if (!templateCache.value) {
@@ -12,6 +11,10 @@ if (!templateCache.value) {
 }
 
 const styles = `
+        [v-cloak] {
+            display: none;
+        }
+
         .sort-off {
             color: lightgray
         }
@@ -22,7 +25,7 @@ const styles = `
         }
 
         form label {
-            font-weight: 500;
+            font-weight: 600;
         }
 `
 // Function to add styles to the head of the document
@@ -35,14 +38,16 @@ const addStyles = (styles) => {
 addStyles(styles); // Adding styles to the head
 
 const VueTable = {
-    props: ['apiEndpoint'],
-    emits: ['pageChanged'],
+    props: ['apiEndpoint', 'apiEditEndpoint', 'apiDeleteEndpoint'],
+    emits: ['pageChanged', 'searchChanged'],
     setup(props) {
         const apiEndpointValue = props.apiEndpoint
         const editing = ref(false)
         const adding = ref(false)
         const selected = ref([])
+        const selectedIndex = ref(-1)
         const flashMessage = ref('Welcome to VueTable.')
+        const flashMessageVariant = ref('warning')
         const currentPage = ref(1)
         const perPage = ref(3)
         const perPageOptions = ref([3,5,10,20,30,50,100])
@@ -50,25 +55,20 @@ const VueTable = {
         const filter = ref('')
         const fields = ref([])
         const items = ref([])
-        const formData = ref(null)
+        const formData = reactive({})  // use Object.assign not formData.value = ...
+        const formErrors = ref([])
 
         const entity = apiEndpointValue.split('/')[1]
         const title = ref('')
         const name_field = ref('')
         const fieldsOrder = ref([])
 
-        fields.value.forEach((el, index) => {
-            if (typeof el!='string') {
-                el.sortdesc = false
-                // el.key = useCapitalize(el.key)
-            } else {
-                // fields.value[index] = useCapitalize(el);
-            }
-        });
-
         const selectedName = computed(() => {
             return this.selected.value.length > 0 ? this.selected.value[0].name : '';
         })
+
+        const titleSingular = computed(() => {return pluralize(1, title.value)})
+        const titlePlural = computed(() => {return pluralize(2, title.value)})
 
         const sortState = ref({
             key: '',
@@ -108,6 +108,12 @@ const VueTable = {
               fieldsOrder.value = []
               fields.value.forEach((el, index) => {
                 fieldsOrder.value.push(typeof el!=='string' ? el.key : el)
+                if (typeof el!=='string') {
+                    el.title = formatColumnTitle(el.key)
+                    el.sortdesc = false
+                } else {
+                    fields.value[index] = formatColumnTitle(el)
+                }
               });
       
               // get init data title and name_field
@@ -126,44 +132,75 @@ const VueTable = {
             }            
         }
 
-        watch([currentPage, filter], () => {
-            fetchData()
+        watch([currentPage], () => { fetchData() })
+
+        watch(filter, () => { fetchData('filter') })
+
+        watch(perPage, (nv, ov) => {
+            fetchData('perPage')
+            localStorage.setItem('perPage', JSON.stringify(nv));
         })
 
-        watch(perPage, () => {fetchData('perPage')})
+        watch(editing, (nv) => { 
+          if (nv) {
+            flashMessage.value = ''
+          }
+          formErrors.value = [] })
 
         function onClickSortBadge() {
             sortState.value = {key: '', descending: false}
+            fetchData('sort')
         }
 
         function onHeaderClick(fld) {
             if (typeof fld!=='string') {
                 sortState.value = changeSort(
                     sortState.value,
-                    fld.key, 
+                    fld.key,
                     fld.key === sortState.value.key ? !sortState.value.descending : false
                   )
+                fetchData('sort')
             }
+        }
+
+        function onClickAdd() {
+          for (let key in formData) {delete formData[key]}
+          editing.value = adding.value = true
         }
 
         function onClickRow(row, id) {
             editing.value = true
+            selectedIndex.value = id
             selected.value = [row]
-            formData.value = {...row}
+            // formData.value = {...row}
+            Object.assign(formData, {...row})
         }
 
         function saveEdit() {
-            adding.value = editing.value = false
-            if (formData.value) {
-                const itemIndex = items.value.findIndex((i) => i.id === formData.value.id);
-                items.value[itemIndex] = { ...formData.value }
-                formData.value = null
-            }
+        //     // use this to test only
+
+        //     if (Object.keys(formData).length > 0) {
+        //       if (adding.value) {
+        //         formData.id = -1
+        //         const newItem = { ...formData }
+        //         items.value.push(newItem)
+        //         flashMessage.value = `[MOCK] ${capitalize(name_field.value)} ${newItem[name_field.value]} added successfully.`
+        //       } else {
+        //         const itemIndex = items.value.findIndex((i) => i.id === formData.id)
+        //         items.value[itemIndex] = { ...formData }
+        //       }
+        //       for (let key in formData) { delete formData[key]}
+        //       selectedIndex.value = -1
+        //     }
+        //     adding.value = editing.value = false
         }
 
         function undoEdit() {
-            adding.value = editing.value = false
-            formData.value = null
+          flashMessage.value = ''
+          // Object.assign( formData, null) // will not work
+          for (let key in formData) {delete formData[key]}
+          selectedIndex.value = -1
+          adding.value = editing.value = false
         }
 
         function onClickCloseAlert() {
@@ -174,12 +211,98 @@ const VueTable = {
             currentPage.value = newPage
         }
 
-        return { editing, adding, selected, selectedName, formData,
-            flashMessage, fields, items, sortState, title, name_field, fieldsOrder, 
-            currentPage, perPageOptions, perPage, totalRows,
-            onHeaderClick, onClickSortBadge, onClickRow, onClickCloseAlert, 
-            undoEdit, saveEdit,
-            pluralize, onPageChanged,
+        function onSearchChanged(newSearch) {
+            filter.value = newSearch
+        }
+
+        const axiosPost = async (url, bodyFormData) => {
+            try {
+                const response = await axios.post(url, bodyFormData, {
+                  headers: { 'Content-Type': 'application/json' },
+              })
+                return response.data
+            } catch (error) {
+                console.error('Error in axiosPost:', error)
+                throw error
+            }
+        }
+  
+        const submitForm = async (event) => {
+            try {
+              const url = `${props.apiEditEndpoint}`
+              const bodyFormData = new FormData()
+      
+              if (adding.value) { formData.id = -1 }
+              for (const [key, value] of Object.entries(formData)) {
+                bodyFormData.append(key, value)
+              }
+      
+              const response = await axiosPost(url, bodyFormData)
+      
+              if (response.message) {
+                // this is surely an error message from flask
+                flashMessageVariant.value = 'warning'
+                flashMessage.value = response.message
+              }
+      
+              if (response.result === 'failed') {
+                formErrors.value = response.errors
+              } else {
+                if (adding.value) {
+                  formData.id = response.newId
+                  const newItem = { ...formData }
+                  items.value.push(newItem)
+                  flashMessage.value = `${capitalize(titleSingular.value)} ${newItem[name_field.value]} added successfully.`
+                } else {
+                  const selectedItem = items.value[selectedIndex.value]
+                  Object.assign(selectedItem, formData)
+                  flashMessage.value = 'Changes saved successfully.'
+                }
+      
+                // Object.assign( formData, {})
+                for (let key in formData) {delete formData[key]}
+                flashMessageVariant.value = 'info'
+                editing.value = adding.value = false
+                selectedIndex.value = -1
+                formErrors.value = []
+              }
+            } catch (error) {
+              console.log('Error in onSubmitForm:', error)
+            }
+          }
+
+          const deleteItem = async (id, event) => {
+              try {
+                  const url = `${props.apiDeleteEndpoint}?id=${id}`
+  
+                  const response = await axiosPost(url);
+                  if (response.result === 'failed') {
+                      flashMessageVariant.value = 'warning'
+                      flashMessage.value = response.message
+                  } else {
+                      const name = formData[name_field.value]
+                      items.value.splice(selectedIndex.value, 1)
+                      flashMessageVariant.value = 'info'
+                      flashMessage.value = `${capitalize(titleSingular.value)} ${name} deleted successfully.`
+                      editing.value = adding.value = false
+                  }
+  
+              } catch(error) {
+                  console.log(error)
+                  if (error.response && error.response.status == 400) {
+                      flashMessage.value = 'Session expired. Please refresh page.'
+                  } else {
+                      console.log('Error in deleteItem:', error);
+                  }
+              }
+          }
+
+        return { editing, adding, selected, selectedName, formData, formErrors,
+            flashMessage, flashMessageVariant, fields, items, sortState, title, name_field, fieldsOrder, 
+            currentPage, perPageOptions, perPage, totalRows, titleSingular, titlePlural,
+            onHeaderClick, onClickSortBadge, onClickRow, onClickAdd, onClickCloseAlert, 
+            undoEdit, saveEdit, submitForm, deleteItem,
+            pluralize, onPageChanged, onSearchChanged,
              }
     },
     delimiters: ['[[',']]'],

@@ -18,33 +18,23 @@
 {% endblock %}
 
 {% block content %}
-    <h2>Users</h2>
+    <h2>Roles</h2>
     <div id="app" v-cloak>
         <vue-table v-slot="{ mydata, formErrors, adding }"
-         api-endpoint="/api_v1/users"
-         api-edit-endpoint="/api_v1/user_edit"
-         api-delete-endpoint="/api_v1/user_delete"
-        >
+        api-endpoint="/api_v1/roles"
+        api-edit-endpoint="/api_v1/role_edit"
+         >
+         <!-- api-delete-endpoint="/api_v1/role_delete" -->
                 <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
-                    <input v-model="mydata.username" type="text" class="form-control" id="username">
-                    <div v-if="formErrors && formErrors.username" class="text-danger" v-text="formErrors.username[0]">
+                    <label for="name" class="form-label">Role name</label>
+                    <input v-model="mydata.name" type="text" class="form-control" id="name">
+                    <div v-if="formErrors.name" class="text-danger" v-text="formErrors.name[0]">
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input v-model="mydata.email" type="text" class="form-control" id="email" :readonly="!adding">
-                    <div v-if="formErrors && formErrors.email" class="text-danger" v-text="formErrors.email[0]"></div>
-                </div>
-                <div class="mb-3">
-                    <label for="firstname" class="form-label">First Name</label>
-                    <input v-model="mydata.first_name" type="text" class="form-control" id="firstname">
-                    <div v-if="formErrors &&  formErrors.first_name" class="text-danger" v-text="formErrors.first_name[0]"></div>
-                </div>
-                <div class="mb-3">
-                    <label for="lastname" class="form-label">Last Name</label>
-                    <input v-model="mydata.last_name" type="text" class="form-control" id="lastname">
-                    <div v-if="formErrors && formErrors.last_name" class="text-danger" v-text="formErrors.last_name[0]"></div>
+                    <label for="description" class="form-label">Description</label>
+                    <input v-model="mydata.description" type="text" class="form-control" id="description">
+                    <div v-if="formErrors.description" class="text-danger" v-text="formErrors.description[0]"></div>
                 </div>
             
         </vue-table>
