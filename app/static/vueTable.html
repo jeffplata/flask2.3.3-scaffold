@@ -7,13 +7,14 @@
     <h3><div v-if="adding" v-text="'Add new '+titleSingular"></div><div v-else v-text="'Edit '+titleSingular+' '+formData[name_field]"></div></h3>
     <form @submit.prevent="submitForm">
         <slot :mydata = "formData" :formErrors="formErrors" :adding="adding"></slot>
-        <div class="d-flex justify-content-end">
+        <div class="d-flex justify-content-end mt-3">
             <button type="submit" class="btn btn-primary me-1">Save</button>
             <button @click="undoEdit" type="button" class="btn btn-secondary me-1">Cancel</button>
         </div>
         <div>
             <button v-if="formData.id" @click="deleteItem(formData.id)" type="button" class="btn btn-sm btn-outline-danger">Delete</button>
         </div>
+        <slot name="secondary-form"></slot>
     </form>
 </div>
 

@@ -6,6 +6,7 @@ from app.models import User
 from app import db
 from .forms import AddUserForm, EditUserForm
 from flask import flash, redirect, url_for
+from app.models import Role
 
 
 @bp.route('/')
@@ -41,7 +42,8 @@ def users():
 
     # return render_template('0.html')
     # return render_template('index.html')
-    return render_template('users_vue.html')
+    roles_dict = [r.to_dict() for r in Role.query]
+    return render_template('users_vue.html', allroles=roles_dict)
 
 
 @bp.route('/users_load')

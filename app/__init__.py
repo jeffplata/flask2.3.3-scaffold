@@ -1,6 +1,7 @@
 from flask import Flask
 from app.config import Config
-from flask_bootstrap import Bootstrap4
+# from flask_bootstrap import Bootstrap4
+from flask_bootstrap import Bootstrap5
 from app.common import db
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -10,7 +11,8 @@ import logging
 import os
 from flask_wtf.csrf import CSRFProtect
 
-bootstrap = Bootstrap4()
+# bootstrap = Bootstrap4()
+bootstrap = Bootstrap5()
 migrate = Migrate()
 login = LoginManager()
 login.login_view = 'auth.login'

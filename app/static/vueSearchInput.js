@@ -23,6 +23,7 @@ const vueSearchInput = {
         const searchText = ref('')
         const searchInputRef = ref(null)
 
+        // note: debounce is from lodash
         const debouncedSearch = _.debounce(() => {
             // console.log('searching for: ', searchText.value)
             ctx.emit('searchChanged', searchText.value)

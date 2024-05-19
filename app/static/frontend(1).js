@@ -104,7 +104,7 @@ const vm = new Vue({ // Again, vm is our Vue instance's name for consistency.
             this.form.last_name = ''
             this.formErrors = {}
         },
-        //TODO refactor ondeleterow and onsubmitform as suggested by chatgpt. see example
+        
         onDeleteRow() {
             var vm = this
             var id = vm.selected[0].id

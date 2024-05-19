@@ -7,6 +7,23 @@ import jwt
 from flask import current_app
 
 
+def insert_unique(session, model, match_criteria, **kwargs):
+    """
+    Insert a record but ensure that it is unique
+    """
+    instance = session.query(model).filter_by(**match_criteria).first()
+    isInserted = False
+
+    if not instance:
+        instance_data = {**match_criteria, **kwargs}
+        instance = model(**instance_data)
+        session.add(instance)
+        session.commit()
+        isInserted = True
+
+    return isInserted, instance
+
+
 user_roles = db.Table('user_roles',
     db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
     db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
@@ -20,6 +37,12 @@ class Role(db.Model):
     def __repr__(self):
         return '<Role {}>'.format(self.name)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+        }
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -58,9 +81,16 @@ class User(db.Model, UserMixin):
             {'reset_password': self.id, 'exp': time() + expires_in},
             current_app.config['SECRET_KEY'], algorithm='HS256')
 
+    # def has_role(self, role):
+    #     roles = [r.name for r in self.roles]
+    #     return role in roles
+    
     def has_role(self, role):
-        roles = [r.name for r in self.roles]
-        return role in roles
+        if isinstance(role, Role):
+            return role in self.roles
+        if isinstance(role, str):
+            return any(r.name == role for r in self.roles)
+        return False
 
     def to_dict(self):
         return {
@@ -71,6 +101,10 @@ class User(db.Model, UserMixin):
             'last_name': self.last_name
         }
 
+    def to_dict_with_roles(self):
+        user_dict = self.to_dict()
+        roles_dict = {'roles':[{'id': role.id, 'name': role.name} for role in self.roles]}
+        return {**user_dict, **roles_dict}
 
 @login.user_loader
 def load_user(id):

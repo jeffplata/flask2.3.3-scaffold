@@ -30,7 +30,7 @@
             <div class="container">
               <a class="navbar-brand" href="{{url_for('main.index')}}">
                   {{config['APP_BRAND_NAME'] or config['APP_NAME'] or 'Navbar'}}</a>
-              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
               </button>
 
@@ -41,7 +41,7 @@
                   {{ render_nav_item('main.about', 'About') }}
 
                   {% if not current_user.is_anonymous and current_user.has_role('admin') %}
-                    <li class="nav-item dropdown">
+                    <!-- <li class="nav-item dropdown">
                       <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Users
                       </a>
@@ -49,7 +49,18 @@
                         <a class="dropdown-item" href="{{url_for('main.users')}}">Users</a>
                         <a class="dropdown-item" href="{{url_for('main.roles')}}">Roles</a>
                       </div>
+                    </li> -->
+
+                    <li class="nav-item dropdown">
+                      <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Users
+                      </a>
+                      <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="{{ url_for('main.users') }}">Users</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('main.roles') }}">Roles</a></li>
+                      </ul>
                     </li>
+                    
                   {% endif %}
 <!-- 
                   {% if not current_user.is_anonymous and current_user.has_role('admin') %}
@@ -60,7 +71,7 @@
                   <a class="btn btn-outline-primary" href="{{url_for('auth.login')}}">Login</a>
                 {% else %}
                    <div class="dropdown">
-                      <button class="btn btn-outline-info dropdown-toggle" data-toggle="dropdown" aria-current="page">
+                      <button class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-current="page">
                         <span class="fa-solid fa-user">&nbsp;</span>{{ current_user.username }}
                       </button>
                       <div class="dropdown-menu">

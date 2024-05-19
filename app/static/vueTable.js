@@ -56,6 +56,7 @@ const VueTable = {
         const fields = ref([])
         const items = ref([])
         const formData = reactive({})  // use Object.assign not formData.value = ...
+        const undoData = reactive({})
         const formErrors = ref([])
 
         const entity = apiEndpointValue.split('/')[1]
@@ -172,33 +173,21 @@ const VueTable = {
             editing.value = true
             selectedIndex.value = id
             selected.value = [row]
-            // formData.value = {...row}
             Object.assign(formData, {...row})
+            // Object.assign(undoData, {...row})
+            Object.assign(undoData, structuredClone(_.cloneDeep(row)))
         }
 
         function saveEdit() {
         //     // use this to test only
-
-        //     if (Object.keys(formData).length > 0) {
-        //       if (adding.value) {
-        //         formData.id = -1
-        //         const newItem = { ...formData }
-        //         items.value.push(newItem)
-        //         flashMessage.value = `[MOCK] ${capitalize(name_field.value)} ${newItem[name_field.value]} added successfully.`
-        //       } else {
-        //         const itemIndex = items.value.findIndex((i) => i.id === formData.id)
-        //         items.value[itemIndex] = { ...formData }
-        //       }
-        //       for (let key in formData) { delete formData[key]}
-        //       selectedIndex.value = -1
-        //     }
-        //     adding.value = editing.value = false
         }
 
         function undoEdit() {
           flashMessage.value = ''
           // Object.assign( formData, null) // will not work
           for (let key in formData) {delete formData[key]}
+          // items.value.splice(selectedIndex.value, 1, {...undoData})
+          items.value.splice(selectedIndex.value, 1, structuredClone(_.cloneDeep(undoData)))
           selectedIndex.value = -1
           adding.value = editing.value = false
         }
@@ -231,9 +220,23 @@ const VueTable = {
             try {
               const url = `${props.apiEditEndpoint}`
               const bodyFormData = new FormData()
+              let tempFormData = new FormData()
       
               if (adding.value) { formData.id = -1 }
-              for (const [key, value] of Object.entries(formData)) {
+
+              const convertArraysToJSON = (obj) => {
+                for (const key in obj) {
+                  if (Array.isArray(obj[key])) {
+                    obj[key] = JSON.stringify(obj[key])
+                  } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                    convertArraysToJSON(obj[key])
+                  }
+                }
+              }
+              Object.assign(tempFormData, formData)
+              convertArraysToJSON(tempFormData)
+
+              for (const [key, value] of Object.entries(tempFormData)) {
                 bodyFormData.append(key, value)
               }
       

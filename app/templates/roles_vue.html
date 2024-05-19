@@ -23,8 +23,8 @@
         <vue-table v-slot="{ mydata, formErrors, adding }"
         api-endpoint="/api_v1/roles"
         api-edit-endpoint="/api_v1/role_edit"
+        api-delete-endpoint="/api_v1/role_delete"
          >
-         <!-- api-delete-endpoint="/api_v1/role_delete" -->
                 <div class="mb-3">
                     <label for="name" class="form-label">Role name</label>
                     <input v-model="mydata.name" type="text" class="form-control" id="name">
