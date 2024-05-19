@@ -87,12 +87,18 @@ def edit_item(data, form_class, model_class, item_instance=None, before_commit_c
     return jsonify({'result': 'failed', 'errors': form.errors, 'message': message})
 
 
-def delete_item(model_class, item_id, before_delete_callback=None):
+def delete_item(model_class, item_id, prevent_delete_callback=None):
     item = model_class.query.get(item_id)
     if item:
         try:
-            if before_delete_callback and before_delete_callback(item):
-                return jsonify({'result': 'failed', 'message': 'You are not allowed to delete this record.'})
+            # before_delete_callback must return True to abort delete
+            # if prevent_delete_callback and prevent_delete_callback(item):
+            #     return jsonify({'result': 'failed', 'message': 'You are not allowed to delete this record.'})
+            if prevent_delete_callback:
+                isAbort, message = prevent_delete_callback(item)
+                if isAbort:
+                    message = 'You are not allowed to delete this record.' if message == '' else message
+                    return jsonify({'result': 'failed', 'message': message})
             db.session.delete(item)
             db.session.commit()
             return jsonify({'result': 'ok'})
@@ -184,7 +190,7 @@ def user_edit():
         if user.email == 'admin@email.com':
             admin_role = Role.query.filter(Role.name=='admin').first()
             if admin_role and admin_role.id in roles_to_delete:
-                return jsonify({'result':'failed','message':"You are not allowed to revoke the 'admin' role for this user." })
+                return jsonify({'result':'failed','errors':[],'message':"You are not allowed to revoke the 'admin' role for this user." })
 
         # delete removed roles
         delete_query = user_roles.delete().where(
@@ -201,27 +207,20 @@ def user_edit():
             db.session.commit()
         except:
             db.session.rollback()
-            return jsonify({'result':'failed','message':'Failed to update roles.' })
+            return jsonify({'result':'failed','errors':[],'message':'Failed to update roles.' })
 
     return res
 
 
-def user_before_delete_callback(user):
-    if user.email == 'admin@email.com':
-        return True
-    return False
+def user_prevent_delete_callback(user):
+    return user.email == 'admin@email.com', 'You are not allowed to delete this user.'
 
 
 @api_bp.route("/user_delete", methods=['POST'])
 def user_delete():
     item_id = request.args.get('id')
-    return delete_item(User, item_id, user_before_delete_callback)
+    return delete_item(User, item_id, user_prevent_delete_callback)
 
-# SCAFF: user_add_roles
-# @api_bp.route("/user_add_roles", methods=['POST'])
-# def user_add_roles():
-
-#     return {}
 
 # Role management
 # ===============
@@ -252,16 +251,22 @@ def role_edit_exception_callback(e, form):
 @api_bp.route("/role_edit", methods=['POST'])
 def role_edit():
     data = request.json
+    if data['id'] != '-1':
+        role = Role.query.get(int(data['id']))
+        if role.name == 'admin':
+            return jsonify({'result':'failed','errors':[],'message':'You are not allowed to edit this record.'})
     return edit_item(data, RoleForm, Role, None, None, role_edit_exception_callback)
 
 
-def role_before_delete_callback(role):
+def role_prevent_delete_callback(role):
     if role.name == 'admin':
-        return True
-    return False
+        return True, 'You are not allowed to delete this role.' 
+    if role.users.all():
+        return True, 'This role is in use. Deletion is not allowed.'
+    return False, ''
 
 
 @api_bp.route("/role_delete", methods=['POST'])
 def role_delete():
     item_id = request.args.get('id')
-    return delete_item(Role, item_id, role_before_delete_callback)
+    return delete_item(Role, item_id, role_prevent_delete_callback)
