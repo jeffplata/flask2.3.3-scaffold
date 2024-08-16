@@ -32,3 +32,6 @@ jinja2.exceptions.TemplateNotFound: users_vue.html
 2024-02-12 11:24:48,500 INFO: Scaffolding startup [in C:\Users\User\Desktop\flask2.3.3-scaffold\app\__init__.py:81]
 2024-02-12 11:34:04,768 INFO: Scaffolding startup [in C:\Users\User\Desktop\flask2.3.3-scaffold\app\__init__.py:81]
 2024-02-12 11:35:05,720 INFO: Scaffolding startup [in C:\Users\User\Desktop\flask2.3.3-scaffold\app\__init__.py:81]
+2024-07-07 20:37:53,280 INFO: Scaffolding startup [in C:\Users\User\Desktop\flask2.3.3-scaffold\app\__init__.py:95]
+2024-07-07 20:37:53,296 INFO: Scaffolding startup [in C:\Users\User\Desktop\flask2.3.3-scaffold\app\__init__.py:95]
+2024-07-07 20:37:53,296 INFO: Scaffolding startup [in C:\Users\User\Desktop\flask2.3.3-scaffold\app\__init__.py:95]

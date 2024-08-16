@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<link href=" https://cdn.jsdelivr.net/npm/bootswatch@5.0.2/dist/flatly/bootstrap.min.css " rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+
+    {% block styles %}
+        <style>
+            [v-cloak] {
+                display: none;
+            }
+        </style>
+    {% endblock %}
+
+{% endblock %}
+
+{% block content %}
+    <h2>Commodities</h2>
+    <hr>
+
+    <div id="app" v-cloak>
+        <vue-table 
+         api-endpoint="/api_v1/commodities"
+         api-edit-endpoint="/api_v1/commodity_edit"
+         api-delete-endpoint="/api_v1/commodity_delete"
+        >
+        <template v-slot="{ mydata, formErrors, adding }" >
+
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name</label>
+                    <input v-model="mydata.name" type="text" class="form-control" id="name">
+                    <div v-if="formErrors && formErrors.name" class="text-danger" v-text="formErrors.name[0]">
+                    </div>
+                </div>
+                <div class="mb-3 form-check">
+                    <input v-model="mydata.is_cereal" type="checkbox" class="form-check-input" id="is_cereal" onclick="onClick(this);">
+                    <label for="is_cereal" class="form-check-label">Cereal?</label>
+                    <div v-if="formErrors &&  formErrors.is_cereal" class="text-danger" v-text="formErrors.is_cereal[0]"></div>
+                </div>
+        </template>
+            
+        </vue-table>
+        
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.2/dist/axios.min.js"></script>
+<script>
+    axios.defaults.headers.common["X-CSRFToken"] = "{{ csrf_token() }}";
+
+    function onClick(cb) {
+        cb.value = cb.checked ? 'yes' : 'no';
+    }
+</script>
+<script type="module" src="/static/vueTable/vue_component.js"></script>
+
+{% endblock %}

@@ -1,3 +1,11 @@
 *If Powershell refuses to activate venv
 
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+* While in development, avoid piling up daily dev commits
+*   maintain limited pushed commits
+
+git reset --soft HEAD~1
+git add .
+git commit -m "your new commit message"
+git push --force

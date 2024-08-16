@@ -10,6 +10,8 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # SQLALCHEMY_SESSION_FLUSH = 'subquery'  # or 'immutable'
+    # SQLALCHEMY_ECHO = True
 
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)
@@ -27,7 +29,18 @@ class Config(object):
 
     # EXPLAIN_TEMPLATE_LOADING = True
 
+    DEFAULT_PASS = 'Password1'
+
     BOOTSTRAP_BOOTSWATCH_THEME = 'flatly'
 
     APP_NAME = 'Scaffolding'
     # APP_BRAND_NAME = 'Scaffolding'
+
+    # UNIQUE_FIELDS = [
+    #     ['user.username','Please use a different username.'],
+    #     ['user.email', 'Please use a different email.'],
+    #     ['role.name', 'Please use a different role name.'],
+    #     ['commodity.name', 'Please use a different commodity name.'],
+    #     ['container.name', 'Please use a different container name.'],
+    #     ['variety.name', 'Please use a different variety name.'],
+    # ]

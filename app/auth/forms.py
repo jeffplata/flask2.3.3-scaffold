@@ -45,7 +45,7 @@ class ResetPasswordForm(FlaskForm):
 
 
 class EditProfileForm(FlaskForm):
-    email = StringField('Email', render_kw={'readonly': True})
+    email = StringField('Email', render_kw={'readonly': True, 'disabled': True})
     username = StringField('Username', validators=[DataRequired()])
     first_name = StringField('First name', validators=[DataRequired()])
     last_name = StringField('Last name', validators=[DataRequired()])

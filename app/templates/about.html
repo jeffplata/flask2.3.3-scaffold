@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>About Page</h1>
-<p>This is the About page.</p>
+<h1>About {{config['APP_NAME']}}</h1>
+<p>NFA online</p>
+<div class="col-md-4">
+<p>
+    {{config['APP_NAME']}} is the online inventory management system
+    of the National Food Authority (NFA). It covers the inventory information
+    of the whole NFA nation-wide.
+</p>
+</div>
 
 {% endblock %}

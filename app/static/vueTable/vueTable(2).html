@@ -1,0 +1,165 @@
+<div v-if="flashMessage!==''" :class="'alert alert-'+flashMessageVariant+' alert-dismissible fade show'" role="alert">
+    [[flashMessage]]
+    <button type="button" class="btn-close" @click="onClickCloseAlert" aria-label="Close"></button>
+</div>
+
+<!-- edit form -->
+<div id="edit_form" v-if="editing" class="col-md-6 ">
+    <h3><div v-if="adding" v-text="'Add new '+titleSingular"></div><div v-else v-text="'Edit '+titleSingular+' '+formData[name_field]"></div></h3>
+    <form @submit.prevent="submitForm">
+        <slot :mydata = "formData" :formErrors="formErrors" :adding="adding"></slot>
+        <div class="d-flex justify-content-end mt-3">
+            <button type="submit" class="btn btn-primary me-2">Save</button>
+            <button @click="undoEdit" type="button" class="btn btn-secondary me-1">Cancel</button>
+        </div>
+        <div v-if="!adding">
+            <div v-if="true">
+                <button @click="deleteItem(formData.id)" type="button" class="btn btn-sm btn-outline-danger">Delete</button>
+            </div>
+            <div v-else v-text="'This record cannot be deleted.'" class="text-info"></div>
+        </div>
+        <slot name="secondary-form"></slot>
+    </form>
+</div>
+
+<!-- child table link -->
+<div v-if="linkTable.parentId > -1 && !editing">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#" @click="linkTable.onClickLink(-1, -1)">[[capitalize(titlePlural)]]</a></li>
+            <li class="breadcrumb-item active" aria-current="page">[[linkShowingTitle]]</li>
+        </ol>
+    </nav>
+
+    <div class="col-8 col-md-4 mb-2">
+        <vue-add-item-panel
+            :placeholder = linkTable.placeholder
+            :lookup-url = linkTable.lookupUrl
+            @itemSelected="linkTable.onItemSelected"
+        ></vue-add-item-panel>
+    </div>
+
+    <table class="table" :set="linkKey = linkShowingTitle.split(' ')[0]">
+        <thead>
+            <tr >
+                <th v-for="item in linkTable.columnTitles(linkKey)">[[item]]</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="(r, ind) in items[selectedIndex][linkKey]">
+                <td v-for="fn in linkTable.columnTitles(linkKey)">
+                    [[r[fn] ]]
+                </td>
+                <td><a href="#" @click.stop="linkTable.onClickDelete(r['id'],ind)"><span class="fas fa-trash"></span></a></td>
+            </tr>
+        </tbody>
+    </table>
+    <div v-if="linkTable.totalRows === 0">No data to show.</div>
+    <div>
+        <div  v-if="linkTable.totalRows > 0" class="row">
+            <div class="col-4 col-md-2">
+                <select class="form-select " v-model="linkTable.perPage">
+                    <option v-for="i in linkTable.perPageOptions" :value="i.value" >[[i.text]]</option>
+                </select>
+            </div>
+            <div class="col-8 col-md-10">
+                <vue-pagination
+                :current-page=linkTable.currentPage :total-rows=linkTable.totalRows :per-page=linkTable.perPage
+                :key="`${linkTable.perPage}+${linkTable.totalRows}`"
+                @pageChanged="linkTable.onPageChanged"
+                >
+                </vue-pagination>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- data table with add button and search input -->
+<div v-show="!editing && linkTable.parentId==-1">
+    <div class="row">
+        <div class="col-4 col-md-8">
+            <button class="btn btn-primary" @click="onClickAdd"><i class="fa fa-plus"></i>Add</button>
+        </div>
+        <div class="col-8 col-md-4">
+            <vue-search-input @searchChanged="onSearchChanged"></vue-search-input>
+        </div>
+    </div>
+
+    <table v-if="!editing" class="table table-hover mt-1">
+        <thead>
+            <tr>
+            <template v-for="(fld, index) in fields" v-bind:key="index">
+                <th v-if="!('visible' in fld) || fld.visible === 'true'"
+                    :set="sortable = (['true', true].includes(fld.sortable))"
+                >
+                    <span v-if="!sortable">
+                        [[fld.title]]
+                    </span>
+                    <span v-else class="header-clickable" @click="onHeaderClick(fld)">[[fld.title]]
+                        <i v-if="sortable" 
+                            class="fas"
+                            :class="{'fa-sort sort-off': sortState.key!=fld.key,
+                            'fa-sort-down': (sortState.key==fld.key && !sortState.descending),
+                            'fa-sort-up': (sortState.key==fld.key && sortState.descending),
+                            }"
+                            >
+                        </i>
+                        <span 
+                            v-if="sortState.key==fld.key " 
+                            class="badge badge-dark text-dark sort-badge"
+                            @click.stop="onClickSortBadge"><i class="fas fa-x"></i></span>
+                    </span>
+                </th>
+            </template>
+            <!-- links -->
+            <template v-for="(item, key) in links" :key="key">
+                <th>[[item['key'] ]]</th>
+            </template>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="(v1, k1) in items" v-bind:key="k1"
+                @click="onClickRow(v1, k1)">
+                  <template v-for="c in fields" v-bind:key = "c" >
+                    <td v-if="!c.hasOwnProperty('visible') || c.visible==='true'" :set="fld = c.key"
+                    >
+                        <span v-if="items_display[fld]" v-html="items_display[fld](v1[fld], v1)"></span>
+                        <span v-else v-text="v1[fld]"></span>
+                    </td>
+                  </template>
+                  <!-- links -->
+                  <template v-for="(item, key) in links" :key="key">
+                    <td :set="isEmpty = v1[item['key'] ].length === 0">
+                        <a href="#" @click.stop="linkTable.onClickLink(k1, v1['id'], item['key'], v1[name_field])">
+                            [[item['key'] ]] [[isEmpty ? `-` :  `(${item['totalRows'][k1]})` ]]</a>
+                    </td>
+                  </template>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- pagination and items per page -->
+<div v-cloak v-if="!(adding || editing) && linkTable.parentId == -1">
+    <div class="row"  v-if="totalRows > 0">
+        <div class="col-4 col-md-2">
+            <select class="form-select " v-model="perPage">
+                <option v-for="i in perPageOptions" :value="i.value">[[i.text]]</option>
+            </select>
+        </div>
+        <div class="col-8 col-md-10">
+            <!-- key="totalRows" ensures re-rendering of vue-pagination on totalRows value update -->
+            <vue-pagination
+            :current-page=currentPage :total-rows=totalRows :per-page=perPage 
+            :key="`${perPage}+${totalRows}`"
+            @pageChanged="onPageChanged"
+            >
+
+            </vue-pagination>
+        </div>
+    </div>
+    <div v-else>
+        No data to show.
+    </div>
+</div>

@@ -38,49 +38,58 @@
                 <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
                   {{ render_nav_item('main.index', 'Home') }}
                   {{ render_nav_item('main.explore', 'Explore') }}
-                  {{ render_nav_item('main.about', 'About') }}
+                  <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="userMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      Library
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="userMenuDropdown">
+                      <li><a class="dropdown-item" href="{{ url_for('main.regions') }}">Regions</a></li>
+                      <li><a class="dropdown-item" href="{{ url_for('main.branches') }}">Branches</a></li>
+                      <li><a class="dropdown-item" href="{{ url_for('main.provinces') }}">Provinces</a></li>
+                      <li><a class="dropdown-item" href="{{ url_for('main.warehouses') }}">Warehouses</a></li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><a class="dropdown-item" href="{{ url_for('main.commodities') }}">Commodities</a></li>
+                      <li><a class="dropdown-item" href="{{ url_for('main.containers') }}">Containers</a></li>
+                      <li><a class="dropdown-item" href="{{ url_for('main.varieties') }}">Varieties</a></li>
+                      <li><a class="dropdown-item" href="{{ url_for('main.items') }}">Items</a></li>
+                      <li><a class="dropdown-item" href="{{ url_for('main.activities') }}">Activities</a></li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><a class="dropdown-item" href="{{ url_for('main.accountabilities') }}">Accountabilities</a></li>
+                    </ul>
+                  </li>
 
                   {% if not current_user.is_anonymous and current_user.has_role('admin') %}
-                    <!-- <li class="nav-item dropdown">
-                      <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Users
-                      </a>
-                      <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="{{url_for('main.users')}}">Users</a>
-                        <a class="dropdown-item" href="{{url_for('main.roles')}}">Roles</a>
-                      </div>
-                    </li> -->
 
                     <li class="nav-item dropdown">
-                      <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      <a class="nav-link dropdown-toggle" href="#" id="userMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Users
                       </a>
-                      <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                      <ul class="dropdown-menu" aria-labelledby="userMenuDropdown">
                         <li><a class="dropdown-item" href="{{ url_for('main.users') }}">Users</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('main.roles') }}">Roles</a></li>
                       </ul>
                     </li>
                     
                   {% endif %}
-<!-- 
-                  {% if not current_user.is_anonymous and current_user.has_role('admin') %}
-                    {{ render_nav_item('frontend_bp.main', 'Users') }}
-                  {% endif %} -->
+                  {{ render_nav_item('main.about', 'About') }}
+                  
                 </ul>
-                {% if current_user.is_anonymous %}
-                  <a class="btn btn-outline-primary" href="{{url_for('auth.login')}}">Login</a>
-                {% else %}
-                   <div class="dropdown">
-                      <button class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-current="page">
-                        <span class="fa-solid fa-user">&nbsp;</span>{{ current_user.username }}
-                      </button>
-                      <div class="dropdown-menu">
-                        <a class="dropdown-item" href="{{url_for('auth.edit_profile')}}">Profile</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a>
+                <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
+                  {% if current_user.is_anonymous %}
+                    <a class="btn btn-outline-primary" href="{{url_for('auth.login')}}">Login</a>
+                  {% else %}
+                    <div class="dropdown">
+                        <button class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-current="page">
+                          <span class="fa-solid fa-user">&nbsp;</span>{{ current_user.username }}
+                        </button>
+                        <div class="dropdown-menu">
+                          <a class="dropdown-item" href="{{url_for('auth.edit_profile')}}">Profile</a>
+                          <div class="dropdown-divider"></div>
+                          <a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a>
+                        </div>
                       </div>
-                    </div>
-                {% endif %}
+                  {% endif %}
+                </ul>
               </div>
             </div>
         </nav>

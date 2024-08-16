@@ -1,0 +1,35 @@
+<!-- items_vue.html template -->
+{% extends "vue_table_base.html" %}
+
+{% block content %}
+    {{ super() }}
+    <div id="app" v-cloak>
+        <vue-table 
+         api-endpoint="/api_v1/item"
+        >
+            <template v-slot="{ mydata, formErrors, adding }" >
+
+                <div class="form-group mb-3">
+                    {{ form.name.label(class="form-label") }}
+                    {{ form.name(class="form-control", **{'v-model':'mydata.name'}) }}
+                    <div v-if="formErrors.name" class="text-danger" v-text="formErrors.name[0]"></div>
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.variety_id.label(class="form-label") }}
+                    {{ form.variety_id(class="form-select", **{'v-model':'mydata.variety_id'}) }}
+                    <div v-if="formErrors.variety_id" class="text-danger" v-text="formErrors.variety_id[0]">
+                    </div>
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.container_id.label(class="form-label") }}
+                    {{ form.container_id(class="form-select", **{'v-model':'mydata.container_id'}) }}
+                    <div v-if="formErrors.container_id" class="text-danger" v-text="formErrors.container_id[0]">
+                    </div>
+                </div>
+
+            </template>
+            
+        </vue-table>
+        
+    </div>
+{% endblock %}

@@ -4,11 +4,10 @@ const template =`
     <div class="row my-1">
         <div class="col-auto" style="margin:0px -20px 5px 0px">
 
-            <span v-for="(tag, index) in tags" class="badge bg-secondary">[[tag.name]] 
+            <span v-for="(tag, index) in tagsUsed" class="badge bg-secondary">[[tag.name]] 
                 <button type="button" @click="deleteTag(index)" class="btn text-light" aria-label="Close">
                 <span aria-hidden="true">&times;</span></button>
             </span>
-
         </div>
         <div class="col-auto">
             <input type="search" v-model="tagInputText" 
@@ -18,7 +17,7 @@ const template =`
                 class="form-control form-control-sm" placeholder="Select role..." 
             />
             <div >
-                <ul vif="menuDroppedDown" :class="['dropdown-menu', {show:menuDroppedDown}]">
+                <ul v-if="menuDroppedDown" :class="['dropdown-menu', {show:menuDroppedDown}]">
                     <li v-for="(tag, index) in tagsSelection" 
                      :key="index"
                      :class="['dropdown-item', {active : index == currentIndex}]" 
@@ -56,7 +55,10 @@ addStyles(styles); // Adding styles to the head
 const {ref, computed, watch, onMounted} = Vue;
 
 const vueTagEditor = {
-    props: {allTags:{type: Array, default: () => []}, tagsUsed:{type: Array, default:() => []}},
+    props: {
+        allTags:{type: Array, default: () => []}, 
+        tagsUsed:{type: Array, default: () => []}
+    },
     setup(props) {
 
         const tagsUsed = ref([])
@@ -65,22 +67,8 @@ const vueTagEditor = {
         const menuDroppedDown = ref(false)
         const currentIndex = ref(-1)
         const availableTags = ref([])
-
-        // const allTags = [
-        //     {id: 1, name: 'admin'},
-        //     {id: 2, name: 'guest'},
-        //     {id: 3, name: 'reviewer'},
-        //     {id: 4, name: 'auditor'},
-        //     {id: 5, name: 'tester'},
-        // ]
         const allTags = props.allTags
 
-        // tags.value = ['admin', 'guest', 'reviewer']
-        // tagsUsed.value = [
-        //     {id: 1, name: 'admin'},
-        //     {id: 2, name: 'guest'},
-        //     {id: 3, name: 'reviewer'},
-        // ]
         tagsUsed.value = props.tagsUsed
         tagsSelection.value = allTags
         
@@ -101,9 +89,6 @@ const vueTagEditor = {
         }
 
         const deleteTag = (index) => {
-            // availableTags.value.push(tags.value[index])
-            // tags.value.splice(index,1)
-
             tagsUsed.value.splice(index,1)
             availableTags.value = getAvailableTags(allTags, tagsUsed.value)
             tagsSelection.value = availableTags.value
@@ -174,9 +159,9 @@ const vueTagEditor = {
         })
 
         return {
-            tagInputText, tags: tagsUsed, deleteTag, onEnter, onSelectItem, 
+            tagInputText, tagsUsed, deleteTag, onEnter, onSelectItem, 
             tagsSelection, onKeyDown, toggleDropdownMenu, menuDroppedDown,
-            onKeyDown, currentIndex,
+            currentIndex,
         }
     },
     template: template,

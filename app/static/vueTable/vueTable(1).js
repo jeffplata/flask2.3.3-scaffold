@@ -4,7 +4,7 @@ const { ref, reactive, computed, watch, onMounted } = Vue;
 
 const templateCache = ref(null)
 if (!templateCache.value) {
-    const response = await fetch('./static/vueTable.html')
+    const response = await fetch('./static/vuetable/vueTable.html')
     const templateText = await response.text()
 
     templateCache.value = templateText
@@ -22,6 +22,11 @@ const styles = `
         .sort-badge {
             cursor: pointer;
             float: right;
+            align-items: center;
+        }
+
+        .header-clickable {
+            cursor: pointer;
         }
 
         form label {
@@ -46,8 +51,8 @@ const VueTable = {
         const adding = ref(false)
         const selected = ref([])
         const selectedIndex = ref(-1)
-        const flashMessage = ref('Welcome to VueTable.')
-        const flashMessageVariant = ref('warning')
+        const flashMessage = ref('Loading...')
+        const flashMessageVariant = ref('info')
         const currentPage = ref(1)
         const perPage = ref(3)
         const perPageOptions = ref([3,5,10,20,30,50,100])
@@ -55,6 +60,7 @@ const VueTable = {
         const filter = ref('')
         const fields = ref([])
         const items = ref([])
+        const items_display = ref([])
         const formData = reactive({})  // use Object.assign not formData.value = ...
         const undoData = reactive({})
         const formErrors = ref([])
@@ -82,6 +88,14 @@ const VueTable = {
             perPage.value = JSON.parse(localStorage.getItem('perPage')) || 10
         })
 
+        const getColumnDisplay = (field, value) => {
+          if (items_display.value.hasOwnProperty(field)) {
+            return items_display.value[field](value);
+          } else {
+            return value
+          }
+        }
+
         const fetchData = async (triggeredBy = '') => {
             const endPoint = `${apiEndpointValue}`
             const startIndex = (currentPage.value - 1) * perPage.value
@@ -102,6 +116,16 @@ const VueTable = {
               const data = response.data
       
               items.value = data.data
+              if (data['display']) {
+                for (const [key, funcString] of Object.entries(data.display)) {
+                  try {
+                    const lambdaFunction = new Function('return ' + funcString)();
+                    items_display.value[key] = lambdaFunction;
+                  } catch (error) {
+                    console.error('Error converting function for key ${key}:', error)
+                  }
+                }
+              }
               fields.value = data.fieldnames
               totalRows.value = data.totalrows
               flashMessage.value = ''
@@ -234,6 +258,10 @@ const VueTable = {
                 }
               }
               Object.assign(tempFormData, formData)
+
+              // convertArraysToJSON ensures that arrays and objects in the items
+              //    are properly serialized as JSON objects; useful for master-detail
+              //    scenarios
               convertArraysToJSON(tempFormData)
 
               for (const [key, value] of Object.entries(tempFormData)) {
@@ -303,9 +331,10 @@ const VueTable = {
         return { editing, adding, selected, selectedName, formData, formErrors,
             flashMessage, flashMessageVariant, fields, items, sortState, title, name_field, fieldsOrder, 
             currentPage, perPageOptions, perPage, totalRows, titleSingular, titlePlural,
+            items_display,
             onHeaderClick, onClickSortBadge, onClickRow, onClickAdd, onClickCloseAlert, 
             undoEdit, saveEdit, submitForm, deleteItem,
-            pluralize, onPageChanged, onSearchChanged,
+            pluralize, onPageChanged, onSearchChanged, getColumnDisplay,
              }
     },
     delimiters: ['[[',']]'],

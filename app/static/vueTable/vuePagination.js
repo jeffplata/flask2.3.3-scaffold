@@ -1,14 +1,14 @@
 const templateCache = `
     <ul class="pagination">
-    <li class="page-item page-item-clickable" :class="{disabled:currentPage==1}">
-        <a class="page-link" @click="onPagerClick('prev')">&laquo;</a></li>
-    <li v-for="(item, idx) in pageLinks" v-bind:key="idx" 
-        class="page-item page-item-clickable" :class="{disabled:item=='...', active:item==currentPage}"
-    >
-        <a class="page-link" @click="onPagerClick(item)">[[item]]</a>
-    </li>
-    <li class="page-item page-item-clickable" :class="{disabled:currentPage==lastPage}">
-        <a class="page-link" @click="onPagerClick('next')">&raquo;</a></li>
+        <li class="page-item page-item-clickable" :class="{disabled:currentPage==1}">
+            <a class="page-link" @click="onPagerClick('prev')">&laquo;</a></li>
+        <li v-for="(item, idx) in pageLinks" v-bind:key="idx" 
+            class="page-item page-item-clickable" :class="{disabled:item=='...', active:item==currentPage}"
+        >
+            <a class="page-link" @click="onPagerClick(item)">[[item]]</a>
+        </li>
+        <li class="page-item page-item-clickable" :class="{disabled:currentPage==lastPage}">
+            <a class="page-link" @click="onPagerClick('next')">&raquo;</a></li>
     </ul>
     `
 

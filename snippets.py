@@ -1,168 +1,120 @@
-from flask import request, jsonify
-from app.api import api_bp
-from app.models import User, Role
-from app import db
-from app.main.forms import UserForm, RoleForm
+from urllib.parse import urlparse
+
+@bp.route('/links/<path:subpath>', methods=['GET', 'POST'])
+def handle_links(subpath):
+    full_url = urlparse(request.url)
+    path_segments = full_url.path.split('/')
+    
+    if len(path_segments) < 3:
+        return "Invalid URL structure", 400
+
+    parent_children = path_segments[2].split('_')
+    if len(parent_children) != 2:
+        return "Invalid parent-child specification in URL", 400
+
+    try:
+        parent_model_class = get_model_class(parent_children[0])
+        child_model_class = get_model_class(parent_children[1])
+    except ValueError as e:
+        return str(e), 400
+
+    # Assume 'id' is passed as a query parameter for both parent and child
+    parent_id = request.args.get('parent_id')
+    child_id = request.args.get('child_id')
+
+    if not parent_id or not child_id:
+        return "Missing parent_id or child_id", 400
+
+    parent_instance = parent_model_class.query.get(int(parent_id))
+    child_instance = child_model_class.query.get(int(child_id))
+
+    if not parent_instance or not child_instance:
+        return "Parent or child not found", 404
+
+    relationship_name = parent_children[1]  # This might need to be more flexible
+    relationship_prop = getattr(parent_instance, relationship_name, None)
+
+    if relationship_prop is None:
+        return f"Relationship {relationship_name} not found on {parent_children[0]}", 400
+
+    one_to_many = is_one_to_many(parent_model_class, relationship_name)
+    
+    if one_to_many:
+        if child_instance in relationship_prop:
+            # Your logic for when the child is in the relationship
+            pass
+        else:
+            # Your logic for when the child is not in the relationship
+            pass
+    else:
+        # Your logic for many-to-many relationships
+        pass
+
+    # Rest of your function logic...
+    return "Processed successfully"
 
 
-def apply_filters(query, model, filters):
-    filter_conditions = []
-    for field, value in filters.items():
-        if hasattr(model, field):
-            filter_conditions.append(getattr(model, field).contains(value))
-    if filter_conditions:
-        query = query.filter(db.or_(*filter_conditions))
-    return query
-
-
-def apply_sort(query, model, sort_by, descending):
-    if sort_by and hasattr(model, sort_by):
-        col = getattr(model, sort_by)
-        if descending:
-            col = col.desc()
-        query = query.order_by(col)
-    return query
-
-
-def paginate(query, start, limit):
-    total_rows = query.count()
-    query = query.offset(start).limit(limit)
-    return query, total_rows
-
-
-def process_form_data(data, model):
-    if data['id'] == '-1':  # New record
-        instance = model(**data)
-        db.session.add(instance)
-    else:  # Existing record
-        instance = model.query.get(int(data['id']))
-        for key, value in data.items():
-            setattr(instance, key, value)
-    return instance
-
-
-def delete_instance(instance):
-    db.session.delete(instance)
-    db.session.commit()
-
-
-def get_items(model_class, filters, request_args):
-    sort_by = request_args.get('sortby')
-    descending = request_args.get('sortdesc') == 'true'
-    start = request_args.get('start')
-    limit = request_args.get('limit')
-
-    query = apply_filters(model_class.query, model_class, filters)
-    query = apply_sort(query, model_class, sort_by, descending)
-    query, total_rows = paginate(query, start, limit)
-
-    return query, total_rows
-
-
-def edit_item(data, form_class, model_class, before_commit_callback=None):
-    form = form_class(**data)
-    if form.validate():
+# /branch_provinces/
+@bp.route('/branch_provinces/<string:action>/', methods=['GET', 'POST'])
+@bp.route('/branch_provinces/<string:action>/<string:id>', methods=['GET', 'POST'])
+def branch_provinces(action=None, id=None):
+    if action == 'get':
+        data = {}
+        pagedDataset_dict = []
+        start = int(request.args.get('start'))
+        limit = int(request.args.get('limit'))
+        fn = request.args.get('fields').split(',')
+        dataset = Branch.query.get(id).provinces
+        totalRows = len(dataset)
+        pagedDataset = dataset[start:limit+start]
+        pagedDataset_dict = [{f: getattr(d, f) for f in fn} for d in pagedDataset]
+        return jsonify({'data': pagedDataset_dict,'totalRows':totalRows})
+    
+    elif action == 'new':
         try:
-            item = process_form_data(data, model_class)
-            if before_commit_callback:
-                before_commit_callback(item, data)
+            parent = Branch.query.get(id)
+            child = Province.query.get( int(request.args.get('id')) )
+            # from urllib.parse import urlparse
+            # full_url = urlparse(request.url)
+            # path_segments = full_url.path.split('/')
+            # print('path segments: ',path_segments)
+            one_to_many = is_one_to_many(Branch,'provinces')
+            if one_to_many:
+                if child in parent.provinces:
+                    return jsonify({'result':'failed',
+                                    'message':'Duplicate entry.'})
+            parent.provinces.append(child)
             db.session.commit()
-            return jsonify({'result': 'ok', 'newId': item.id})
+            fn = request.args.get('linkFields').split(',')
+            data = {f: getattr(child,f) for f in fn}
+            # data = {'id':user.id,'username':user.username,'email':user.email}
+            return jsonify({'result':'ok',
+                            'message':f"Province '{child.name}' successfully added to branch '{parent.name}'",
+                            'data':data})
+        except IntegrityError as e:
+            db.session.rollback()
+            return jsonify({'result':'failed', 'message': 'Duplicate entry'})
         except Exception as e:
             db.session.rollback()
-            return jsonify({'result': 'failed', 'message': 'Error: Your changes cannot be saved.'})
-    return jsonify({'result': 'failed', 'errors': form.errors})
-
-
-def delete_item(model_class, item_id, before_delete_callback=None):
-    item = model_class.query.get(item_id)
-    if item:
+            return jsonify({'result':'failed', 'message': e.args[0]})
+        
+    elif action == 'delete': 
         try:
-            if before_delete_callback and before_delete_callback(item):
-                return jsonify({'result': 'failed', 'message': 'You are not allowed to delete this record.'})
-            db.session.delete(item)
+            parent = Branch.query.get(id)
+            child = Province.query.get( int(request.args.get('id')) )
+            parent.provinces.remove(child)
             db.session.commit()
-            return jsonify({'result': 'ok'})
+            # print('delete staged.')
+            return jsonify({'result':'ok','message':f"Province '{child.name}' successfully removed from branch '{parent.name}'"})
         except Exception as e:
             db.session.rollback()
-            return jsonify({'result': 'failed', 'message': 'Failed to delete.'})
-    return jsonify({'result': 'failed', 'message': 'Record not found.'})
-
-# User management
-# ===============
-
-@api_bp.route("/users_init")
-def users_init():
-    data = {'title': 'user|users', 'name_field': 'username'}
-    return data
-
-
-@api_bp.route("/users")
-def users():
-    filters = {
-        'username': request.args.get('filtertext'),
-        'email': request.args.get('filtertext'),
-        'first_name': request.args.get('filtertext'),
-        'last_name': request.args.get('filtertext')
-    }
-    fieldnames = ['id', 'username', 'email', 'first_name', 'last_name']
-    query, total_rows = get_items(User, filters, request.args)
-    data = [u.to_dict() for u in query]
-    return jsonify({'fieldnames':fieldnames,'data':data,'totalrows':total_rows})
-
-
-def user_before_commit_callback(user, data):
-    if data['id'] == '-1':
-        user.set_password('Password1')
-
-@api_bp.route("/user_edit", methods=['POST'])
-def user_edit():
-    data = request.json
-    return edit_item(data, UserForm, User, user_before_commit_callback)
-
-
-def user_before_delete_callback(user):
-    if user.email == 'admin@email.com':
-        return True
-    return False
-
-
-@api_bp.route("/user_delete", methods=['POST'])
-def user_delete():
-    item_id = request.args.get('id')
-    return delete_item(User, item_id, user_before_delete_callback)
-
-# Role management
-# ===============
-
-@api_bp.route("/roles_init")
-def roles_init():
-    data = {'title': 'role|roles', 'name_field': 'name'}
-    return data
-
-
-@api_bp.route("/roles")
-def roles():
-    filters = {'name': request.args.get('filtertext'), 'description': request.args.get('filtertext')}
-    fieldnames = ['id', 'name', 'description']
-    query, total_rows = get_items(Role, filters, request.args)
-    data = [{'id': r.id, 'name': r.name, 'description': r.description} for r in query]
-    return jsonify({'fieldnames':fieldnames,'data':data,'totalrows':total_rows})
-
-
-@api_bp.route("/role_edit", methods=['POST'])
-def role_edit():
-    data = request.json
-    return edit_item(data, RoleForm, Role)
-
-
-def role_before_delete_callback(role):
-    if role.name == 'admin':
-        return True
-    return False
-
-
-@api_bp.route("/role_delete", methods=['POST'])
-def role_delete():
-    item_id = request.args.get('id')
-    return delete_item(Role, item_id, role_before_delete_callback)
+            return jsonify({'result':'failed', 'message': e.args[0]})
+    elif action == 'lookup':
+        searchText = request.args.get('searchText')
+        # dataset = Province.query.filter(db.or_(func.lower(Province.name).icontains(searchText)))
+        dataset = Province.query.filter(db.or_(Province.name.icontains(searchText)))
+        totalRows = dataset.count()
+        dataset_json = [{'id': data.id, 'name': data.name} for data in dataset[:10]]
+        return jsonify({'data':dataset_json,'totalRows':totalRows})
+    else:
+        raise Exception('Invalid action.')

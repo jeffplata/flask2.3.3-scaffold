@@ -36,3 +36,35 @@ export function capitalize(data) {
 export function formatColumnTitle(str) {
     return capitalize(str.replace('_', ' '))
 }
+
+// Function to add styles to the head of the document
+export function addStyles(styles) {
+    const styleElement = document.createElement('style');
+    styleElement.textContent = styles;
+    document.head.appendChild(styleElement);
+};
+
+
+// export const convertArraysToJSON = (obj) => {
+//   for (const key in obj) {
+//     if (Array.isArray(obj[key])) {
+//       obj[key] = JSON.stringify(obj[key])
+//     } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+//       convertArraysToJSON(obj[key])
+//     }
+//   }
+// }
+
+export function formatDate(dateString) {
+  let date = new Date(dateString);
+  
+  // Get day, month, and year
+  let day = date.getDate().toString().padStart(2, '0');
+  let month = (date.getMonth() + 1).toString().padStart(2, '0'); // Month is zero-indexed
+  let year = date.getFullYear();
+  
+  // Construct short date format
+  let shortDateFormat = `${month}/${day}/${year}`;
+  
+  return shortDateFormat;
+}

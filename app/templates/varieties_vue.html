@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% import 'bootstrap5/form.html' as wtf %}
+
+{% block head %}
+{{ super() }}
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<link href=" https://cdn.jsdelivr.net/npm/bootswatch@5.0.2/dist/flatly/bootstrap.min.css " rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+
+    {% block styles %}
+        <style>
+            [v-cloak] {
+                display: none;
+            }
+        </style>
+    {% endblock %}
+
+{% endblock %}
+
+{% block content %}
+    <h2>Varieties</h2>
+    <hr>
+
+    <div id="app" v-cloak>
+        <vue-table 
+         api-endpoint="/api_v1/variety"
+        >
+        <template v-slot="{ mydata, formErrors, adding }" >
+            <div class="form-group mb-2">
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-control", **{'v-model':'mydata.name'}) }}
+                <div v-if="formErrors.name" class="text-danger" v-text="formErrors.name[0]">
+                </div>
+            </div>
+            <div class="form-group mb-2">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control", **{'v-model':'mydata.description'}) }}
+                <div v-if="formErrors.description" class="text-danger" v-text="formErrors.description[0]">
+                </div>
+            </div>
+            <div class="form-group mb-2">
+                {{ form.commodity_id.label(class="form-label") }}
+                {{ form.commodity_id(class="form-select", **{'v-model':'mydata.commodity_id'}) }}
+                <div v-if="formErrors.commodity_id" class="text-danger" v-text="formErrors.commodity_id[0]">
+                </div>
+            </div>
+        </template>
+    </vue-table>
+        
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.2/dist/axios.min.js"></script>
+<script>
+    axios.defaults.headers.common["X-CSRFToken"] = "{{ csrf_token() }}";
+</script>
+<script type="module" src="/static/vueTable/vue_component.js"></script>
+
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% import 'bootstrap5/form.html' as wtf %}
+
+{% block head %}
+{{ super() }}
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<link href=" https://cdn.jsdelivr.net/npm/bootswatch@5.0.2/dist/flatly/bootstrap.min.css " rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+
+    {% block styles %}
+        <style>
+            [v-cloak] {
+                display: none;
+            }
+        </style>
+    {% endblock %}
+
+{% endblock %}
+
+{% block content %}
+    <h2>Containers</h2>
+    <hr>
+
+    <div id="app" v-cloak>
+        <vue-table 
+         api-endpoint="/api_v1/container"
+        >
+        <template v-slot="{ mydata, formErrors, adding }" >
+            <div class="form-group mb-2">
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-control", **{'v-model':'mydata.name'}) }}
+                <div v-if="formErrors.name" class="text-danger" v-text="formErrors.name[0]">
+                </div>
+            </div>
+            <div class="form-group mb-2">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control", **{'v-model':'mydata.description'}) }}
+                <div v-if="formErrors.description" class="text-danger" v-text="formErrors.description[0]">
+                </div>
+            </div>
+            <div class="form-group mb-2">
+                {{ form.weight.label(class="form-label") }}
+                {{ form.weight(class="form-control", **{'v-model':'mydata.weight'}) }}
+                <div v-if="formErrors.weight" class="text-danger" v-text="formErrors.weight[0]">
+                </div>
+            </div>
+            <div class="form-group mb-2">
+                {{ form.wt_capacity.label(class="form-label") }}
+                {{ form.wt_capacity(class="form-control", **{'v-model':'mydata.wt_capacity'}) }}
+                <div v-if="formErrors.wt_capacity" class="text-danger" v-text="formErrors.wt_capacity[0]">
+                </div>
+            </div>
+        </template>
+    </vue-table>
+        
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.2/dist/axios.min.js"></script>
+<script>
+    axios.defaults.headers.common["X-CSRFToken"] = "{{ csrf_token() }}";
+
+    function onClick(cb) {
+        cb.value = cb.checked ? 'yes' : 'no';
+    }
+</script>
+<script type="module" src="/static/vueTable/vue_component.js"></script>
+
+{% endblock %}
