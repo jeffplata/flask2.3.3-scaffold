@@ -1,10 +1,10 @@
-import VuePagination from '/static/vuetable/vuePagination.js'
+import VuePagination from '/static/vueTable/vuePagination.js'
 import VueTable from '/static/vueTable/vueTable.js'
-import VueSearchInput from '/static/vuetable/vueSearchInput.js'
-import VueTagEditor from '/static/vuetable/VueTagEditor.js'
-import VueAddItemPanel from '/static/vuetable/vueAddItemPanel.js'
-import VueLinkTable from '/static/vuetable/vueLinkTable.js'
-import VueSelectField from '/static/vuetable/vueSelectField.js'
+import VueSearchInput from '/static/vueTable/vueSearchInput.js'
+import VueTagEditor from '/static/vueTable/vueTagEditor.js'
+import VueAddItemPanel from '/static/vueTable/vueAddItemPanel.js'
+import VueLinkTable from '/static/vueTable/vueLinkTable.js'
+import VueSelectField from '/static/vueTable/vueSelectField.js'
 const app = Vue.createApp({
   setup() {
     // ...

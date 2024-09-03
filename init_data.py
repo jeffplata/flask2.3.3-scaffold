@@ -84,3 +84,10 @@ def populate_locations():
         print('Provinces populated')
     else:
         print('Provinces already populated')
+
+
+# Uncomment for automatic execution 
+
+# if __name__ == "__main__":
+#     create_admin()
+#     populate_locations()

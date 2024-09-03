@@ -5,7 +5,7 @@ const { ref, reactive, computed, watch, onMounted } = Vue;
 
 const templateCache = ref(null)
 if (!templateCache.value) {
-    const response = await fetch('./static/vuetable/vueTable.html')
+    const response = await fetch('./static/vueTable/vueTable.html')
     const templateText = await response.text()
 
     templateCache.value = templateText

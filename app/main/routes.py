@@ -5,10 +5,15 @@ from app.common import access_required
 from app.models import User
 from app import db
 from .forms import AddUserForm, EditUserForm
-from flask import flash, redirect, url_for
+from flask import flash, redirect, url_for, send_from_directory
 from app.models import Role
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func
+
+
+# @bp.route('/static/js/<path:filename>')
+# def serve_js(filename):
+#     return send_from_directory('/static/js', filename, mimetype='application/javascript')
 
 
 @bp.route('/')
