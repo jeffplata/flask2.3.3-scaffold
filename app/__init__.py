@@ -52,8 +52,6 @@ def create_app(config_class=Config):
     app.register_error_handler(500, internal_error)
     app.register_error_handler(404, not_found_error)
 
-    from app.frontend import frontend_bp
-    app.register_blueprint(frontend_bp)
     from app.api import api_bp
     app.register_blueprint(api_bp, url_prefix='/api_v1')
 

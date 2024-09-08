@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
-from wtforms.validators import ValidationError, DataRequired, Email
-from app.models import User
-from flask import current_app
+from wtforms.validators import Email, DataRequired
+# from app.models import User
+# from flask import current_app
 
 
 class AddUserForm(FlaskForm):

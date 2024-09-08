@@ -1,12 +1,9 @@
 from flask_wtf import FlaskForm
-from wtforms_sqlalchemy.fields import QuerySelectField
-from wtforms import StringField, BooleanField, DecimalField, SelectField, \
+from wtforms import StringField, DecimalField, SelectField, \
     DateField
 from wtforms.validators import DataRequired
 from app.models2 import Commodity, Region, Branch, Container, Variety, Warehouse
 from app.models import User
-from wtforms import SubmitField
-from wtforms.validators import Optional
 from wtforms.fields import DateField as WTFormsDateField
 from datetime import datetime
 
