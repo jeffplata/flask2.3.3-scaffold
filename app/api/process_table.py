@@ -215,8 +215,7 @@ def edit_item(data, **kwargs):
             return jsonify({'result': 'failed', 'errors': form.errors, 'message': message})
         except Exception as e:
             db.session.rollback()
-            raise e
-            # return jsonify({'result': 'failed', 'errors': form.errors, 'message': e.args[0]})        
+            return jsonify({'result': 'failed', 'errors': form.errors, 'message': e.args[0]})        
     return jsonify({'result': 'failed', 'errors': form.errors, 'message': message})
 
 
@@ -323,8 +322,6 @@ def process_table(table, action=None, id=None, **kwargs):
                 db.session.commit()
                 return jsonify({'result':'ok'})
             except IntegrityError:
-                return jsonify({'result': 'failed', 'message': 'Record is currently in use.'})
+                return jsonify({'result': 'failed', 'message': 'Delete not allowed. Record is currently in use.'})
             except Exception as e:
-                raise e
-                # return jsonify({'result': 'failed', 'message': str(e.args[0])})
-
+                return jsonify({'result': 'failed', 'message': str(e.args[0])})
