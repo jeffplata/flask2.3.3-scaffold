@@ -21,11 +21,21 @@ def login():
             next_page = request.args.get('next')
             return redirect(url_for('auth.login', next=next_page))
         login_user(user, remember=form.remember_me.data)
+        # next_page = request.args.get('next')
+        # next_page_netloc = url_parse(next_page).netloc if next_page else ''
+        # if not next_page or next_page_netloc != '' and next_page_netloc != url_parse(request.host_url).netloc:
+        #     next_page = url_for('main.index')
+        # return redirect(next_page)
+    
         next_page = request.args.get('next')
-        next_page_netloc = url_parse(next_page).netloc if next_page else ''
-        if not next_page or next_page_netloc != '' and next_page_netloc != url_parse(request.host_url).netloc:
-            next_page = url_for('main.index')
-        return redirect(next_page)
+        if next_page:
+            next_page_netloc = url_parse(next_page).netloc if next_page else ''
+            if not next_page or next_page_netloc != '' and next_page_netloc != url_parse(request.host_url).netloc:
+                next_page = url_for('main.index')
+            return redirect(next_page)
+        else:
+            return redirect(url_for('main.dashboard'))
+    
     return render_template('auth/login.html', title='Sign In', form=form)
 
 

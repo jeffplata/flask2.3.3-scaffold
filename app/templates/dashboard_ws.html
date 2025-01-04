@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Dashboard</h1>
+<p class="text-muted">Warehouse Supervisor</p>
+
+{% for a in accountabilities %}
+    Accountability: {{a.warehouse_name}}, {{a.period_start}}<br>
+{% endfor %}
+
+<div class="row">
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Local Palay</h5>
+          <h1 class="card-text">10,669</h1>
+          <p class="small">10,569 bags | 528.45 MT</p>
+          <a href="#" class="btn btn-primary">Open table</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Local Rice</h5>
+          <h1 class="card-text">2,455</h1>
+          <p class="small">10,569 bags | 528.45 MT</p>
+          <a href="#" class="btn btn-primary">Go somewhere</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+{% endblock %}

@@ -86,6 +86,19 @@ class Commodity(db.Model):
 
     def __repr__(self):
         return f'<Commodity {self.name}>'
+    
+
+# todo: continue working
+# class Supplies(db.Model):
+#     __tablename__ = 'supplies'
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(20), unique=True, nullable=False)
+#     description = db.Column(db.String(20), default='')
+#     is_container = db.Column(db.String(5), default='false' )
+#     weight = db.Column(db.Numeric(15, 4), default=Decimal('0'))
+#     wt_capacity = db.Column(db.Numeric(15, 4), default=Decimal('50'))
+
+#     items = db.relationship('Item', back_populates='supplies', passive_deletes=True)
 
 
 class Container(db.Model):
